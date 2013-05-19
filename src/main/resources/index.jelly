@@ -1,0 +1,6 @@
+<!--
+  This view is used to render the installed plugins page.
+-->
+<div>
+  Integrates Jenkins with Gitlab to build Merge Requests
+</div>
