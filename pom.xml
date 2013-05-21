@@ -13,6 +13,7 @@
 
     <name>Gitlab Merge Request Builder</name>
     <description>A plugin to build merge requests in Gitlab</description>
+    <url>https://wiki.jenkins-ci.org/display/JENKINS/Jenkins+Gitlab+Merge+Request+Builder+Plugin</url>
 
     <scm>
         <connection>scm:git:ssh://github.com/timols/jenkins-gitlab-merge-request-builder-plugin.git</connection>
