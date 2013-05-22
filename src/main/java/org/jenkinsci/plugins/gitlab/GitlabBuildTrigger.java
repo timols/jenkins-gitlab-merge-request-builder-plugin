@@ -239,7 +239,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
             return result;
         }
 
-        /*package*/ String getBotApiToken() {
+        public String getBotApiToken() {
             return _botApiToken;
         }
 
