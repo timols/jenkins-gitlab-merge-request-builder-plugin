@@ -34,7 +34,10 @@ request indicating whether the merge request was successful.
 * Create a new job by going to ``New Job``
 * Set the ``Project Name``
 * Feel free to specify the ``GitHub Project`` url as the url for the Gitlab project (if you have the GitHub plugin installed)
-* Tick ``This build is parameterized``
+* Tick ``This build is parameterized``:
+    * Add a string parameter named ``gitlabSourceBranch``
+    * Add a string parameter named ``gitlabTargetBranch``
+    * Add a string parameter named ``gitlabMergeRequestId``
 * In the ``SCM`` section:
     * Click ``Git`` and enter your Repositroy URL
     * In ``Branch Specifier`` enter ``${gitlabSourceBranch}``
