@@ -14,7 +14,7 @@ request indicating whether the merge request was successful.
 ## Installation
 
 * Ensure that a Jenkins user exists within Gitlab and has access to the repository. Ensure that the user
-  has **Reporter** level access to the project.
+  has **Developer** level access to the project.
 * Install the plugin in Jenkins.
     * Currently, the plugin isn't hosted on the Jenkins Plugin repository. This means you'll need to
       clone this repository, build the plugin with (mvn hpi:hpi).
