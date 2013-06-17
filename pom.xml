@@ -8,7 +8,7 @@
 
     <groupId>com.switchfly</groupId>
     <artifactId>gitlab-merge-request-jenkins</artifactId>
-    <version>1.1.0-SNAPSHOT</version>
+    <version>1.1.0</version>
     <packaging>hpi</packaging>
 
     <name>Gitlab Merge Request Builder</name>
