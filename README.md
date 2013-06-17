@@ -48,8 +48,6 @@ request indicating whether the merge request was successful.
 * In the ``Build Triggers`` section:
     * Check the ``Gitlab Merge Requests Builder``
     * Enter the ``Gitlab Project Path``, this might be something like ``gitlabhq/gitlabhq``
-        * At the moment, this can most easily be found by visiting the Gitlab API.
-        * Go to http://<GITLAB HOST URL>//api/v3/projects/?private_token=<JENKINS USER API TOKEN> and find the project ID in the JSON
 * Configure any other pre build, build or post build actions as necessary
 * ``Save`` to preserve your changes
 
