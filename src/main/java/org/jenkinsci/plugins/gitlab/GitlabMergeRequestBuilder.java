@@ -8,7 +8,6 @@ public class GitlabMergeRequestBuilder {
     private AbstractProject<?, ?> _project;
     private GitlabBuildTrigger _trigger;
     private Map<Integer, GitlabMergeRequestWrapper> _mergeRequests;
-    private boolean _checked = false;
     private GitlabBuilds _builds;
     private GitlabRepository _repository;
 
@@ -25,11 +24,6 @@ public class GitlabMergeRequestBuilder {
     }
 
     public void run() {
-        if (_checked) {
-            return;
-        }
-
-        _checked = true;
         _repository.check();
     }
 
