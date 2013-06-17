@@ -29,14 +29,14 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
     private static final Logger _logger = Logger.getLogger(GitlabBuildTrigger.class.getName());
 
     private final String _cron;
-    private final Integer _projectId;
+    private final String _projectPath;
     transient private GitlabMergeRequestBuilder _gitlabMergeRequestBuilder;
 
     @DataBoundConstructor
-    public GitlabBuildTrigger(String cron, Integer projectId) throws ANTLRException {
+    public GitlabBuildTrigger(String cron, String projectPath) throws ANTLRException {
         super(cron);
         _cron = cron;
-        _projectId = projectId;
+        _projectPath = projectPath;
     }
 
     @Override
@@ -115,8 +115,8 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
         return (GitlabBuildTrigger) trigger;
     }
 
-    public Integer getProjectId() {
-        return _projectId;
+    public String getProjectPath() {
+        return _projectPath;
     }
 
     @Extension

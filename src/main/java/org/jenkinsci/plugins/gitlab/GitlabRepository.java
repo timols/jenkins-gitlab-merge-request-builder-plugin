@@ -14,14 +14,14 @@ import org.gitlab.api.models.GitlabProject;
 public class GitlabRepository {
 
     private static final Logger _logger = Logger.getLogger(GitlabRepository.class.getName());
-    private Integer _projectId;
+    private String _projectPath;
 
     private Map<Integer, GitlabMergeRequestWrapper> _mergeRequests;
     private GitlabProject _project;
     private GitlabMergeRequestBuilder _builder;
 
-    public GitlabRepository(Integer projectId, GitlabMergeRequestBuilder builder, Map<Integer, GitlabMergeRequestWrapper> mergeRequests) {
-        _projectId = projectId;
+    public GitlabRepository(String projectPath, GitlabMergeRequestBuilder builder, Map<Integer, GitlabMergeRequestWrapper> mergeRequests) {
+        _projectPath = projectPath;
         _builder = builder;
         _mergeRequests = mergeRequests;
     }
@@ -36,14 +36,14 @@ public class GitlabRepository {
 
     private boolean checkState() {
         if (_project == null) {
-            try {
-                _project = _builder.getGitlab().get().getProject(_projectId);
-            } catch (IOException e) {
-                _logger.log(Level.SEVERE, "Could not retrieve Project with id: " + _projectId + " (Have you properly configured the project id?)");
-                return false;
-            }
+            _project = getProjectForPath(_projectPath);
         }
-        return true;
+
+        if (_project == null) {
+            _logger.log(Level.SEVERE, "No project with path: " + _projectPath + " found");
+        }
+
+        return _project != null;
     }
 
     public void check() {
@@ -91,6 +91,20 @@ public class GitlabRepository {
         for (Integer id : closedMergeRequests) {
             mergeRequests.remove(id);
         }
+    }
+
+    private GitlabProject getProjectForPath(String path) {
+        try {
+            List<GitlabProject> projects = _builder.getGitlab().get().getAllProjects();
+            for (GitlabProject project : projects) {
+                if (project.getPathWithNamespace().equals(path)) {
+                    return project;
+                }
+            }
+        } catch (IOException e) {
+            _logger.log(Level.SEVERE, "Could not retrieve Project with path: " + path + " (Have you properly configured the project path?)");
+        }
+        return null;
     }
 
     public String getProjectUrl() {

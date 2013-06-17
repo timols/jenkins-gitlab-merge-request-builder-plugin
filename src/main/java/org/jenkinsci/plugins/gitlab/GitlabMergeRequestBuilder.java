@@ -48,7 +48,7 @@ public class GitlabMergeRequestBuilder {
             throw new IllegalStateException();
         }
 
-        _repository = new GitlabRepository(_trigger.getProjectId(), this, _mergeRequests);
+        _repository = new GitlabRepository(_trigger.getProjectPath(), this, _mergeRequests);
         _repository.init();
         _builds = new GitlabBuilds(_trigger, _repository);
         return this;
