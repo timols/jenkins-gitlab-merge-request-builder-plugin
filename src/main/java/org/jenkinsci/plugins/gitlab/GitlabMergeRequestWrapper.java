@@ -141,8 +141,10 @@ public class GitlabMergeRequestWrapper {
         _shouldRun = false;
         String message = _builder.getBuilds().build(this);
 
-        createNote(message);
-        _logger.log(Level.INFO, message);
+        if (_builder.isEnableBuildTriggeredMessage()) {
+            createNote(message);
+            _logger.log(Level.INFO, message);
+        }
     }
 
 }

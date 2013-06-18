@@ -127,6 +127,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
         private String _gitlabHostUrl;
         private String _botApiToken;
         private String _cron = "*/5 * * * *";
+        private boolean _enableBuildTriggeredMessage = true;
         private String _successMessage = "Tests PASSED";
         private String _failureMessage = "Tests FAILED";
         private boolean _ignoreCertificateErrors = false;
@@ -157,6 +158,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
             _botApiToken = formData.getString("botApiToken");
             _gitlabHostUrl = formData.getString("gitlabHostUrl");
             _cron = formData.getString("cron");
+            _enableBuildTriggeredMessage = formData.getBoolean("enableBuildTriggeredMessage");
             _successMessage = formData.getString("successMessage");
             _failureMessage = formData.getString("failureMessage");
             _ignoreCertificateErrors = formData.getBoolean("ignoreCertificateErrors");
@@ -199,6 +201,10 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
 
         public String getCron() {
             return _cron;
+        }
+
+        public boolean isEnableBuildTriggeredMessage() {
+        	return _enableBuildTriggeredMessage;
         }
 
         public String getSuccessMessage() {

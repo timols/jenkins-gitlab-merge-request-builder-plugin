@@ -65,4 +65,12 @@ public class GitlabMergeRequestBuilder {
             return new Gitlab();
         }
     }
+    
+    public boolean isEnableBuildTriggeredMessage() {
+        if (_trigger != null) {
+            return _trigger.getDescriptor().isEnableBuildTriggeredMessage();
+        } else {
+            return GitlabBuildTrigger.DESCRIPTOR.isEnableBuildTriggeredMessage();
+        }
+    }
 }
