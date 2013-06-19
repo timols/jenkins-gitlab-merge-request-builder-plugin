@@ -19,10 +19,10 @@
       <f:checkbox />
     </f:entry>
     <f:entry title="${%Default success message}" field="successMessage">
-      <f:textarea default="Tests PASSED"/>
+      <f:textarea default="Build finished.  Tests PASSED."/>
     </f:entry>
     <f:entry title="${%Default failure message}" field="failureMessage">
-      <f:textarea default="Tests FAILED"/>
+      <f:textarea default="Build finished.  Tests FAILED."/>
     </f:entry>
     <f:entry title="${%Ignore SSL Certificate Errors}" field="ignoreCertificateErrors">
       <f:checkbox />

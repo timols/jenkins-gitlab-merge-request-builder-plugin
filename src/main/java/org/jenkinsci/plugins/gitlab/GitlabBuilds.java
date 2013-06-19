@@ -63,7 +63,6 @@ public class GitlabBuilds {
         }
 
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("Build finished.\n");
         if (build.getResult() == Result.SUCCESS) {
             stringBuilder.append(_trigger.getDescriptor().getSuccessMessage());
         } else {
@@ -71,7 +70,7 @@ public class GitlabBuilds {
         }
 
         String buildUrl = Jenkins.getInstance().getRootUrl() + build.getUrl();
-        stringBuilder.append("\nBuild Results available at: ").append(buildUrl);
+        stringBuilder.append("\nBuild results available at: ").append(buildUrl);
         _repository.createNote(cause.getMergeRequestId(), stringBuilder.toString());
 
     }

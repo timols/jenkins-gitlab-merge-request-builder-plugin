@@ -128,8 +128,8 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
         private String _botApiToken;
         private String _cron = "*/5 * * * *";
         private boolean _enableBuildTriggeredMessage = true;
-        private String _successMessage = "Tests PASSED";
-        private String _failureMessage = "Tests FAILED";
+        private String _successMessage = "Build finished.  Tests PASSED.";
+        private String _failureMessage = "Build finished.  Tests FAILED.";
         private boolean _ignoreCertificateErrors = false;
 
         private transient Gitlab _gitlab;
@@ -209,14 +209,14 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
 
         public String getSuccessMessage() {
             if (_successMessage == null) {
-                _successMessage = "Tests PASSED";
+                _successMessage = "Build finished.  Tests PASSED.";
             }
             return _successMessage;
         }
 
         public String getFailureMessage() {
             if (_failureMessage == null) {
-                _failureMessage = "Tests FAILED";
+                _failureMessage = "Build finished.  Tests FAILED.";
             }
             return _failureMessage;
         }
