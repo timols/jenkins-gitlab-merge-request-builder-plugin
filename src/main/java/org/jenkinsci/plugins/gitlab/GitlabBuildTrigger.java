@@ -127,8 +127,9 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
         private String _gitlabHostUrl;
         private String _botApiToken;
         private String _cron = "*/5 * * * *";
-        private String _successMessage = "Tests PASSED";
-        private String _failureMessage = "Tests FAILED";
+        private boolean _enableBuildTriggeredMessage = true;
+        private String _successMessage = "Build finished.  Tests PASSED.";
+        private String _failureMessage = "Build finished.  Tests FAILED.";
         private boolean _ignoreCertificateErrors = false;
 
         private transient Gitlab _gitlab;
@@ -157,6 +158,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
             _botApiToken = formData.getString("botApiToken");
             _gitlabHostUrl = formData.getString("gitlabHostUrl");
             _cron = formData.getString("cron");
+            _enableBuildTriggeredMessage = formData.getBoolean("enableBuildTriggeredMessage");
             _successMessage = formData.getString("successMessage");
             _failureMessage = formData.getString("failureMessage");
             _ignoreCertificateErrors = formData.getBoolean("ignoreCertificateErrors");
@@ -201,16 +203,20 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
             return _cron;
         }
 
+        public boolean isEnableBuildTriggeredMessage() {
+        	return _enableBuildTriggeredMessage;
+        }
+
         public String getSuccessMessage() {
             if (_successMessage == null) {
-                _successMessage = "Tests PASSED";
+                _successMessage = "Build finished.  Tests PASSED.";
             }
             return _successMessage;
         }
 
         public String getFailureMessage() {
             if (_failureMessage == null) {
-                _failureMessage = "Tests FAILED";
+                _failureMessage = "Build finished.  Tests FAILED.";
             }
             return _failureMessage;
         }
