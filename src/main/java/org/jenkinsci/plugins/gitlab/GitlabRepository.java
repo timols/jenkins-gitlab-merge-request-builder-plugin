@@ -109,7 +109,7 @@ public class GitlabRepository {
 
     public String getProjectUrl() {
         try {
-            return _builder.getGitlab().get().getUrl(_project.getPath()).toString();
+            return _builder.getGitlab().get().getUrl(_project.getPathWithNamespace()).toString();
         } catch (IOException e) {
             return null;
         }
