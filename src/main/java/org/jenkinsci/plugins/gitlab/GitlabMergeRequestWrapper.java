@@ -72,7 +72,7 @@ public class GitlabMergeRequestWrapper {
     }
 
     private GitlabNote getJenkinsNote(GitlabMergeRequest gitlabMergeRequest, GitlabAPI api) throws IOException {
-        List<GitlabNote> notes = api.getNotes(gitlabMergeRequest);
+        List<GitlabNote> notes = api.getAllNotes(gitlabMergeRequest);
         GitlabNote lastJenkinsNote = null;
 
         if (!notes.isEmpty()) {
