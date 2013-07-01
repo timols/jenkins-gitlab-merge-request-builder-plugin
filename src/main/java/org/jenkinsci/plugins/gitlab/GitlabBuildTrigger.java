@@ -56,20 +56,23 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
     }
 
     public QueueTaskFuture<?> startJob(GitlabCause cause) {
-        List<ParameterValue> values = getDefaultParameters();
-        values.add(new StringParameterValue("gitlabMergeRequestId", String.valueOf(cause.getMergeRequestId())));
-        values.add(new StringParameterValue("gitlabSourceBranch", cause.getSourceBranch()));
-        values.add(new StringParameterValue("gitlabTargetBranch", cause.getTargetBranch()));
+        Map<String, ParameterValue> values = getDefaultParameters();
 
-        return this.job.scheduleBuild2(0, cause, new ParametersAction(values));
+        values.put("gitlabMergeRequestId", new StringParameterValue("gitlabMergeRequestId", String.valueOf(cause.getMergeRequestId())));
+        values.put("gitlabSourceBranch", new StringParameterValue("gitlabSourceBranch", cause.getSourceBranch()));
+        values.put("gitlabTargetBranch", new StringParameterValue("gitlabTargetBranch", cause.getTargetBranch()));
+
+        List<ParameterValue> listValues = new ArrayList<ParameterValue>(values.values());
+        return this.job.scheduleBuild2(0, cause, new ParametersAction(listValues));
     }
 
-    private List<ParameterValue> getDefaultParameters() {
-        ArrayList<ParameterValue> values = new ArrayList<ParameterValue>();
+    private Map<String, ParameterValue> getDefaultParameters() {
+        Map<String, ParameterValue> values = new HashMap<String, ParameterValue>();
         ParametersDefinitionProperty definitionProperty = this.job.getProperty(ParametersDefinitionProperty.class);
+
         if (definitionProperty != null) {
             for (ParameterDefinition definition : definitionProperty.getParameterDefinitions()) {
-                values.add(definition.getDefaultParameterValue());
+                values.put(definition.getName(), definition.getDefaultParameterValue());
             }
         }
 
