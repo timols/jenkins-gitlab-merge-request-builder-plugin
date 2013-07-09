@@ -59,11 +59,7 @@ public class GitlabMergeRequestBuilder {
     }
 
     public Gitlab getGitlab() {
-        if (_trigger != null) {
-            return _trigger.getDescriptor().getGitlab();
-        } else {
-            return new Gitlab();
-        }
+        return GitlabBuildTrigger.DESCRIPTOR.getGitlab();
     }
     
     public boolean isEnableBuildTriggeredMessage() {

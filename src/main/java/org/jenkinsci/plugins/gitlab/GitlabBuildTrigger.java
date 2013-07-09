@@ -226,7 +226,8 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
 
         public Gitlab getGitlab() {
             if (_gitlab == null) {
-                return new Gitlab();
+                _gitlab = new Gitlab();
+                _gitlab.get().ignoreCertificateErrors(_ignoreCertificateErrors);
             }
             return _gitlab;
         }
