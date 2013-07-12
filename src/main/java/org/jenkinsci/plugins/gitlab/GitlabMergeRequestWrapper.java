@@ -83,7 +83,8 @@ public class GitlabMergeRequestWrapper {
             });
 
             for (GitlabNote note : notes) {
-                if (note.getAuthor().getUsername().equals(GitlabBuildTrigger.getDesc().getBotUsername())) {
+                if (note.getAuthor() != null &&
+                        note.getAuthor().getUsername().equals(GitlabBuildTrigger.getDesc().getBotUsername())) {
                     lastJenkinsNote = note;
                     break;
                 }
