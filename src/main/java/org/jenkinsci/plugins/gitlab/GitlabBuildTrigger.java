@@ -59,6 +59,8 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
         Map<String, ParameterValue> values = getDefaultParameters();
 
         values.put("gitlabMergeRequestId", new StringParameterValue("gitlabMergeRequestId", String.valueOf(cause.getMergeRequestId())));
+        values.put("gitlabSourceName", new StringParameterValue("gitlabSourceName", cause.getSourceName()));
+        values.put("gitlabSourceRepository", new StringParameterValue("gitlabSourceRepository", cause.getSourceRepository()));
         values.put("gitlabSourceBranch", new StringParameterValue("gitlabSourceBranch", cause.getSourceBranch()));
         values.put("gitlabTargetBranch", new StringParameterValue("gitlabTargetBranch", cause.getTargetBranch()));
 
