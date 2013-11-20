@@ -4,11 +4,13 @@ import hudson.model.Cause;
 
 public class GitlabCause extends Cause {
     private final Integer _mergeRequestId;
+    private final Integer _mergeRequestIid;
     private final String _sourceBranch;
     private final String _targetBranch;
 
-    public GitlabCause(Integer mergeRequestId, String sourceBranch, String targetBranch) {
+    public GitlabCause(Integer mergeRequestId, Integer mergeRequestIid, String sourceBranch, String targetBranch) {
         _mergeRequestId = mergeRequestId;
+        _mergeRequestIid = mergeRequestIid;
         _sourceBranch = sourceBranch;
         _targetBranch = targetBranch;
     }
@@ -16,11 +18,15 @@ public class GitlabCause extends Cause {
 
     @Override
     public String getShortDescription() {
-        return "Gitlab Merge Request #" + _mergeRequestId + " : " + _sourceBranch + " => " + _targetBranch;
+        return "Gitlab Merge Request #" + _mergeRequestIid + " : " + _sourceBranch + " => " + _targetBranch;
     }
 
     public Integer getMergeRequestId() {
         return _mergeRequestId;
+    }
+
+    public Integer getMergeRequestIid() {
+        return _mergeRequestIid;
     }
 
     public String getSourceBranch() {
