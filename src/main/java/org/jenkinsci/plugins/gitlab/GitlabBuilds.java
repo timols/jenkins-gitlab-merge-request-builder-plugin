@@ -65,6 +65,8 @@ public class GitlabBuilds {
         StringBuilder stringBuilder = new StringBuilder();
         if (build.getResult() == Result.SUCCESS) {
             stringBuilder.append(_trigger.getDescriptor().getSuccessMessage());
+        } else if (build.getResult() == Result.UNSTABLE) {
+            stringBuilder.append(_trigger.getDescriptor().getUnstableMessage());
         } else {
             stringBuilder.append(_trigger.getDescriptor().getFailureMessage());
         }
