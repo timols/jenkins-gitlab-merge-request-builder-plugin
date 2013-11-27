@@ -132,6 +132,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
         private String _cron = "*/5 * * * *";
         private boolean _enableBuildTriggeredMessage = true;
         private String _successMessage = "Build finished.  Tests PASSED.";
+        private String _unstableMessage = "Build finished.  Tests FAILED.";
         private String _failureMessage = "Build finished.  Tests FAILED.";
         private boolean _ignoreCertificateErrors = false;
 
@@ -163,6 +164,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
             _cron = formData.getString("cron");
             _enableBuildTriggeredMessage = formData.getBoolean("enableBuildTriggeredMessage");
             _successMessage = formData.getString("successMessage");
+            _unstableMessage = formData.getString("unstableMessage");
             _failureMessage = formData.getString("failureMessage");
             _ignoreCertificateErrors = formData.getBoolean("ignoreCertificateErrors");
 
@@ -215,6 +217,13 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
                 _successMessage = "Build finished.  Tests PASSED.";
             }
             return _successMessage;
+        }
+
+        public String getUnstableMessage() {
+            if (_unstableMessage == null) {
+                _unstableMessage = "Build finished.  Tests FAILED.";
+            }
+            return _unstableMessage;
         }
 
         public String getFailureMessage() {
