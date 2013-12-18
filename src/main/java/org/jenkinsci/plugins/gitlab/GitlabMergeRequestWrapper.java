@@ -16,6 +16,7 @@ public class GitlabMergeRequestWrapper {
 
     private static final Logger _logger = Logger.getLogger(GitlabMergeRequestWrapper.class.getName());
     private final Integer _id;
+    private Integer _iid;
     private final String _author;
     private String _source;
     private String _target;
@@ -28,6 +29,7 @@ public class GitlabMergeRequestWrapper {
 
     GitlabMergeRequestWrapper(GitlabMergeRequest mergeRequest, GitlabMergeRequestBuilder builder, GitlabProject project) {
         _id = mergeRequest.getId();
+        _iid = mergeRequest.getIid();
         _author = mergeRequest.getAuthor().getUsername();
         _source = mergeRequest.getSourceBranch();
         _target = mergeRequest.getTargetBranch();
@@ -41,6 +43,10 @@ public class GitlabMergeRequestWrapper {
     }
 
     public void check(GitlabMergeRequest gitlabMergeRequest) {
+        if (_iid == null) {
+            _iid = gitlabMergeRequest.getIid();
+        }
+
         if (_target == null) {
             _target = gitlabMergeRequest.getTargetBranch();
         }
@@ -113,6 +119,10 @@ public class GitlabMergeRequestWrapper {
         return _id;
     }
 
+    public Integer getIid() {
+        return _iid;
+    }
+
     public String getAuthor() {
         return _author;
     }
@@ -128,6 +138,7 @@ public class GitlabMergeRequestWrapper {
     public GitlabNote createNote(String message) {
         GitlabMergeRequest mergeRequest = new GitlabMergeRequest();
         mergeRequest.setId(_id);
+        mergeRequest.setIid(_iid);
         mergeRequest.setProjectId(_project.getId());
 
         try {

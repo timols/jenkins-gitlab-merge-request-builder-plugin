@@ -115,8 +115,8 @@ public class GitlabRepository {
         }
     }
 
-    public String getMergeRequestUrl(Integer mergeRequestId) {
-        return getProjectUrl() + GitlabMergeRequest.URL + "/" + mergeRequestId;
+    public String getMergeRequestUrl(Integer mergeRequestIid) {
+        return getProjectUrl() + GitlabMergeRequest.URL + "/" + mergeRequestIid;
     }
 
     public GitlabNote createNote(Integer mergeRequestId, String message) {
