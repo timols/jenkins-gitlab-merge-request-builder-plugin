@@ -22,6 +22,8 @@ public class GitlabMergeRequestWrapper {
     private String _target;
 
     private boolean _shouldRun = false;
+    
+    private GitlabMergeRequestStatus _mergeRequestStatus;
 
     transient private GitlabProject _project;
     transient private GitlabMergeRequestBuilder _builder;
@@ -35,6 +37,7 @@ public class GitlabMergeRequestWrapper {
         _target = mergeRequest.getTargetBranch();
         _project = project;
         _builder = builder;
+        _mergeRequestStatus = new GitlabMergeRequestStatus();
     }
 
     public void init(GitlabMergeRequestBuilder builder, GitlabProject project) {
@@ -54,19 +57,21 @@ public class GitlabMergeRequestWrapper {
         if (_source == null) {
             _source = gitlabMergeRequest.getSourceBranch();
         }
+        
+        _mergeRequestStatus.load(); // load conf from xml file
 
         try {
             GitlabAPI api = _builder.getGitlab().get();
             GitlabNote lastJenkinsNote = getJenkinsNote(gitlabMergeRequest, api);
+            GitlabCommit latestCommit = getLatestCommit(gitlabMergeRequest, api);
 
             if (lastJenkinsNote == null) {
                 _shouldRun = true;
             } else {
-                GitlabCommit latestCommit = getLatestCommit(gitlabMergeRequest, api);
-
-                if (latestCommit != null) {
-                    _shouldRun = latestCommit.getCreatedAt().after(lastJenkinsNote.getCreatedAt());
-                }
+                _shouldRun = latestCommitIsNotReached(latestCommit);
+            }
+            if (_shouldRun) {
+            	_mergeRequestStatus.setLatestCommitOfMergeRequest(_id.toString(), latestCommit.getId());
             }
         } catch (IOException e) {
             _logger.log(Level.SEVERE, "Failed to fetch commits for Merge Request " + gitlabMergeRequest.getId());
@@ -75,6 +80,14 @@ public class GitlabMergeRequestWrapper {
         if (_shouldRun) {
             build();
         }
+    }
+
+    private boolean latestCommitIsNotReached(GitlabCommit latestCommit) {
+    	String _lastCommit = _mergeRequestStatus.getLatestCommitOfMergeRequest(_id.toString());
+    	if (_lastCommit != null && _lastCommit.equals(latestCommit.getId())){
+    		return false;
+    	}
+        return true;
     }
 
     private GitlabNote getJenkinsNote(GitlabMergeRequest gitlabMergeRequest, GitlabAPI api) throws IOException {
