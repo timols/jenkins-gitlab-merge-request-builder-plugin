@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.gitlab.api.GitlabAPI;
 import org.gitlab.api.models.GitlabCommit;
 import org.gitlab.api.models.GitlabMergeRequest;
@@ -58,8 +59,6 @@ public class GitlabMergeRequestWrapper {
             _source = gitlabMergeRequest.getSourceBranch();
         }
         
-        _mergeRequestStatus.load(); // load conf from xml file
-
         try {
             GitlabAPI api = _builder.getGitlab().get();
             GitlabNote lastJenkinsNote = getJenkinsNote(gitlabMergeRequest, api);
