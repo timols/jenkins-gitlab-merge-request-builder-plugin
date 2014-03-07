@@ -37,7 +37,7 @@ request indicating whether the merge request was successful.
 * Feel free to specify the ``GitHub Project`` url as the url for the Gitlab project (if you have the GitHub plugin installed)
 * In the ``SCM`` section:
     * Click ``Git`` and enter your Repositroy URL
-    * In ``Branch Specifier`` enter ``${gitlabSourceBranch}``
+    * In ``Branch Specifier`` enter ``origin/${gitlabSourceBranch}`` (if origin corresponds to Gitlab)
     * Open the Advanced options
     * Tick the ``Merge before build`` option and specify the name of the repository as ``origin`` (if origin corresponds to Gitlab)
       and enter the ``Branch to merge to`` as ``${gitlabTargetBranch}``
