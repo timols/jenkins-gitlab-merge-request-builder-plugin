@@ -20,9 +20,9 @@ public class GitlabBuilds {
     }
 
     public String build(GitlabMergeRequestWrapper mergeRequest) {
-        GitlabCause cause = new GitlabCause(mergeRequest.getId(), mergeRequest.getSourceName(),
-                mergeRequest.getSourceRepository(), mergeRequest.getSourceBranch(),
-                mergeRequest.getTargetBranch());
+        GitlabCause cause = new GitlabCause(mergeRequest.getId(), mergeRequest.getIid(),
+                mergeRequest.getSourceName(), mergeRequest.getSourceRepository(),
+                mergeRequest.getSourceBranch(), mergeRequest.getTargetBranch());
 
         QueueTaskFuture<?> build = _trigger.startJob(cause);
         if (build == null) {
@@ -51,7 +51,7 @@ public class GitlabBuilds {
         }
 
         try {
-            build.setDescription("<a href=\"" + _repository.getMergeRequestUrl(cause.getMergeRequestId()) + "\">" + getOnStartedMessage(cause) + "</a>");
+            build.setDescription("<a href=\"" + _repository.getMergeRequestUrl(cause.getMergeRequestIid()) + "\">" + getOnStartedMessage(cause) + "</a>");
         } catch (IOException e) {
             _logger.log(Level.SEVERE, "Can't update build description", e);
         }
@@ -67,6 +67,8 @@ public class GitlabBuilds {
         StringBuilder stringBuilder = new StringBuilder();
         if (build.getResult() == Result.SUCCESS) {
             stringBuilder.append(_trigger.getDescriptor().getSuccessMessage());
+        } else if (build.getResult() == Result.UNSTABLE) {
+            stringBuilder.append(_trigger.getDescriptor().getUnstableMessage());
         } else {
             stringBuilder.append(_trigger.getDescriptor().getFailureMessage());
         }
@@ -74,10 +76,9 @@ public class GitlabBuilds {
         String buildUrl = Jenkins.getInstance().getRootUrl() + build.getUrl();
         stringBuilder.append("\nBuild results available at: ").append(buildUrl);
         _repository.createNote(cause.getMergeRequestId(), stringBuilder.toString());
-
     }
 
     private String getOnStartedMessage(GitlabCause cause) {
-        return "Merge Request #" + cause.getMergeRequestId() + " (" + cause.getSourceBranch() + " => " + cause.getTargetBranch() + ")";
+        return "Merge Request #" + cause.getMergeRequestIid() + " (" + cause.getSourceBranch() + " => " + cause.getTargetBranch() + ")";
     }
 }

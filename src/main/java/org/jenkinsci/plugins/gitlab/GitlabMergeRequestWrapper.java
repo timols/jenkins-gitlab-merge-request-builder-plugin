@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.gitlab.api.GitlabAPI;
 import org.gitlab.api.models.GitlabCommit;
 import org.gitlab.api.models.GitlabMergeRequest;
@@ -16,12 +17,15 @@ public class GitlabMergeRequestWrapper {
 
     private static final Logger _logger = Logger.getLogger(GitlabMergeRequestWrapper.class.getName());
     private final Integer _id;
+    private Integer _iid;
     private final String _author;
     private GitlabProject _sourceProject;
     private String _sourceBranch;
     private String _targetBranch;
 
     private boolean _shouldRun = false;
+    
+    private GitlabMergeRequestStatus _mergeRequestStatus;
 
     transient private GitlabProject _project;
     transient private GitlabMergeRequestBuilder _builder;
@@ -29,6 +33,7 @@ public class GitlabMergeRequestWrapper {
 
     GitlabMergeRequestWrapper(GitlabMergeRequest mergeRequest, GitlabMergeRequestBuilder builder, GitlabProject project) {
         _id = mergeRequest.getId();
+        _iid = mergeRequest.getIid();
         _author = mergeRequest.getAuthor().getUsername();
         _sourceBranch = mergeRequest.getSourceBranch();
         try {
@@ -39,6 +44,7 @@ public class GitlabMergeRequestWrapper {
         _targetBranch = mergeRequest.getTargetBranch();
         _project = project;
         _builder = builder;
+        _mergeRequestStatus = new GitlabMergeRequestStatus();
     }
 
     public void init(GitlabMergeRequestBuilder builder, GitlabProject project) {
@@ -47,6 +53,10 @@ public class GitlabMergeRequestWrapper {
     }
 
     public void check(GitlabMergeRequest gitlabMergeRequest) {
+        if (_iid == null) {
+            _iid = gitlabMergeRequest.getIid();
+        }
+
         if (_targetBranch == null) {
             _targetBranch = gitlabMergeRequest.getTargetBranch();
         }
@@ -64,19 +74,19 @@ public class GitlabMergeRequestWrapper {
                 return;
             }
         }
-
+        
         try {
             GitlabAPI api = _builder.getGitlab().get();
             GitlabNote lastJenkinsNote = getJenkinsNote(gitlabMergeRequest, api);
+            GitlabCommit latestCommit = getLatestCommit(gitlabMergeRequest, api);
 
             if (lastJenkinsNote == null) {
                 _shouldRun = true;
             } else {
-                GitlabCommit latestCommit = getLatestCommit(gitlabMergeRequest, api);
-
-                if (latestCommit != null) {
-                    _shouldRun = latestCommit.getCreatedAt().after(lastJenkinsNote.getCreatedAt());
-                }
+                _shouldRun = latestCommitIsNotReached(latestCommit);
+            }
+            if (_shouldRun) {
+            	_mergeRequestStatus.setLatestCommitOfMergeRequest(_id.toString(), latestCommit.getId());
             }
         } catch (IOException e) {
             _logger.log(Level.SEVERE, "Failed to fetch commits for Merge Request " + gitlabMergeRequest.getId());
@@ -85,6 +95,14 @@ public class GitlabMergeRequestWrapper {
         if (_shouldRun) {
             build();
         }
+    }
+
+    private boolean latestCommitIsNotReached(GitlabCommit latestCommit) {
+    	String _lastCommit = _mergeRequestStatus.getLatestCommitOfMergeRequest(_id.toString());
+    	if (_lastCommit != null && _lastCommit.equals(latestCommit.getId())){
+    		return false;
+    	}
+        return true;
     }
 
     private GitlabNote getJenkinsNote(GitlabMergeRequest gitlabMergeRequest, GitlabAPI api) throws IOException {
@@ -133,6 +151,10 @@ public class GitlabMergeRequestWrapper {
         return _id;
     }
 
+    public Integer getIid() {
+        return _iid;
+    }
+
     public String getAuthor() {
         return _author;
     }
@@ -156,6 +178,7 @@ public class GitlabMergeRequestWrapper {
     public GitlabNote createNote(String message) {
         GitlabMergeRequest mergeRequest = new GitlabMergeRequest();
         mergeRequest.setId(_id);
+        mergeRequest.setIid(_iid);
         mergeRequest.setProjectId(_project.getId());
 
         try {

@@ -21,6 +21,9 @@
     <f:entry title="${%Default success message}" field="successMessage">
       <f:textarea default="Build finished.  Tests PASSED."/>
     </f:entry>
+    <f:entry title="${%Default unstable message}" field="unstableMessage">
+      <f:textarea default="Build finished.  Tests FAILED."/>
+    </f:entry>
     <f:entry title="${%Default failure message}" field="failureMessage">
       <f:textarea default="Build finished.  Tests FAILED."/>
     </f:entry>

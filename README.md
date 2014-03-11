@@ -16,9 +16,10 @@ request indicating whether the merge request was successful.
 * Ensure that a Jenkins user exists within Gitlab and has access to the repository. Ensure that the user
   has **Developer** level access to the project.
 * Install the plugin in Jenkins.
-    * Currently, the plugin isn't hosted on the Jenkins Plugin repository. This means you'll need to
-      clone this repository, build the plugin with (mvn hpi:hpi).
-    * Go to ``Jenkins`` -> ``Manage Plugins`` -> ``Advanced`` -> ``Choose File`` -> Select the .hpi file and upload
+    * The plugin is hosted on the [Jenkins Plugin repository](https://wiki.jenkins-ci.org/display/JENKINS/Gitlab+Merge+Request+Builder+Plugin)
+    * Go to ``Jenkins`` -> ``Manage Plugins`` -> ``Available``
+    * Search for ``Gitlab Merge Request Builder``
+    * And install it
     * Ensure you restart Jenkins
 * Go to ``Manage Jenkins`` -> ``Configure System`` -> ``Gitlab Merge Requests Builder``
 * Set the ``Gitlab Host URL`` to the base URL of your Gitlab server
@@ -37,7 +38,7 @@ request indicating whether the merge request was successful.
 * In the ``SCM`` section:
     * Click ``Git`` and enter your Repositroy URL and in Advanced set its Name to ``origin``
     * For merge requests from forked repositories add another repository with Repository URL ``${gitlabSourceRepository}`` and in Advanced set Name to ``${gitlabSourceName}``
-    * In ``Branch Specifier`` enter ``${gitlabSourceBranch}`` or for merge requests from forked repositories enter ``${gitlabSourceName}/${gitlabSourceBranch}``
+    * In ``Branch Specifier`` enter ``origin/${gitlabSourceBranch}`` or for merge requests from forked repositories enter ``${gitlabSourceName}/${gitlabSourceBranch}``
     * Open the Advanced options
     * Tick the ``Merge before build`` option and specify the name of the repository as ``origin`` (if origin corresponds to Gitlab)
       and enter the ``Branch to merge to`` as ``${gitlabTargetBranch}``
