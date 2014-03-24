@@ -9,7 +9,7 @@ request indicating whether the merge request was successful.
 ## Prerequisites
 
 * Whilst there is no explict dependency on the [Git plugin](https://wiki.jenkins-ci.org/display/JENKINS/Git+Plugin),
-  it's strongly recommended that you install it since Jenkins will be unable to fetch the source code for you project.
+  it's strongly recommended that you install it since Jenkins will be unable to fetch the source code for your project.
 
 ## Installation
 
