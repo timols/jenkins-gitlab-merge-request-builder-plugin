@@ -164,7 +164,7 @@ public class GitlabMergeRequestWrapper {
     }
 
     public String getSourceRepository() {
-        return _sourceProject.getSshUrl();
+        return _sourceProject.getHttpUrl();
     }
 
     public String getSourceBranch() {
