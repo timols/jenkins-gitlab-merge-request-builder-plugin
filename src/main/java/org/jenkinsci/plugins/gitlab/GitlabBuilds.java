@@ -20,7 +20,9 @@ public class GitlabBuilds {
     }
 
     public String build(GitlabMergeRequestWrapper mergeRequest) {
-        GitlabCause cause = new GitlabCause(mergeRequest.getId(), mergeRequest.getIid(), mergeRequest.getSource(), mergeRequest.getTarget());
+        GitlabCause cause = new GitlabCause(mergeRequest.getId(), mergeRequest.getIid(),
+                mergeRequest.getSourceName(), mergeRequest.getSourceRepository(),
+                mergeRequest.getSourceBranch(), mergeRequest.getTargetBranch());
 
         QueueTaskFuture<?> build = _trigger.startJob(cause);
         if (build == null) {

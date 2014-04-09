@@ -36,8 +36,9 @@ request indicating whether the merge request was successful.
 * Set the ``Project Name``
 * Feel free to specify the ``GitHub Project`` url as the url for the Gitlab project (if you have the GitHub plugin installed)
 * In the ``SCM`` section:
-    * Click ``Git`` and enter your Repositroy URL
-    * In ``Branch Specifier`` enter ``origin/${gitlabSourceBranch}`` (if origin corresponds to Gitlab)
+    * Click ``Git`` and enter your Repositroy URL and in Advanced set its Name to ``origin``
+    * For merge requests from forked repositories add another repository with Repository URL ``${gitlabSourceRepository}`` and in Advanced set Name to ``${gitlabSourceName}``
+    * In ``Branch Specifier`` enter ``origin/${gitlabSourceBranch}`` or for merge requests from forked repositories enter ``${gitlabSourceName}/${gitlabSourceBranch}``
     * Open the Advanced options
     * Tick the ``Merge before build`` option and specify the name of the repository as ``origin`` (if origin corresponds to Gitlab)
       and enter the ``Branch to merge to`` as ``${gitlabTargetBranch}``

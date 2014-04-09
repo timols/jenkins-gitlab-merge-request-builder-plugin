@@ -19,8 +19,9 @@ public class GitlabMergeRequestWrapper {
     private final Integer _id;
     private Integer _iid;
     private final String _author;
-    private String _source;
-    private String _target;
+    private GitlabProject _sourceProject;
+    private String _sourceBranch;
+    private String _targetBranch;
 
     private boolean _shouldRun = false;
     
@@ -34,8 +35,13 @@ public class GitlabMergeRequestWrapper {
         _id = mergeRequest.getId();
         _iid = mergeRequest.getIid();
         _author = mergeRequest.getAuthor().getUsername();
-        _source = mergeRequest.getSourceBranch();
-        _target = mergeRequest.getTargetBranch();
+        _sourceBranch = mergeRequest.getSourceBranch();
+        try {
+            _sourceProject = getSourceProject(mergeRequest, builder.getGitlab().get());
+        } catch (IOException e) {
+            // Ignore
+        }
+        _targetBranch = mergeRequest.getTargetBranch();
         _project = project;
         _builder = builder;
         _mergeRequestStatus = new GitlabMergeRequestStatus();
@@ -51,12 +57,22 @@ public class GitlabMergeRequestWrapper {
             _iid = gitlabMergeRequest.getIid();
         }
 
-        if (_target == null) {
-            _target = gitlabMergeRequest.getTargetBranch();
+        if (_targetBranch == null) {
+            _targetBranch = gitlabMergeRequest.getTargetBranch();
         }
 
-        if (_source == null) {
-            _source = gitlabMergeRequest.getSourceBranch();
+        if (_sourceBranch == null) {
+            _sourceBranch = gitlabMergeRequest.getSourceBranch();
+        }
+
+        if (_sourceProject == null) {
+            try {
+                GitlabAPI api = _builder.getGitlab().get();
+                _sourceProject = getSourceProject(gitlabMergeRequest, api);
+            } catch (IOException e) {
+                _logger.log(Level.SEVERE, "Failed to get source project for Merge request " + gitlabMergeRequest.getId() + " :\n" + e.getMessage());
+                return;
+            }
         }
         
         try {
@@ -127,6 +143,10 @@ public class GitlabMergeRequestWrapper {
         return commits.get(0);
     }
 
+    private GitlabProject getSourceProject(GitlabMergeRequest gitlabMergeRequest, GitlabAPI api) throws IOException {
+        return api.getProject(gitlabMergeRequest.getSourceProjectId());
+    }
+
     public Integer getId() {
         return _id;
     }
@@ -139,12 +159,20 @@ public class GitlabMergeRequestWrapper {
         return _author;
     }
 
-    public String getSource() {
-        return _source;
+    public String getSourceName() {
+        return _sourceProject.getPathWithNamespace();
     }
 
-    public String getTarget() {
-        return _target;
+    public String getSourceRepository() {
+        return _sourceProject.getSshUrl();
+    }
+
+    public String getSourceBranch() {
+        return _sourceBranch;
+    }
+
+    public String getTargetBranch() {
+        return _targetBranch;
     }
 
     public GitlabNote createNote(String message) {
