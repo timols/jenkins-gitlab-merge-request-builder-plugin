@@ -74,7 +74,8 @@ public class GitlabBuilds {
         }
 
         String buildUrl = Jenkins.getInstance().getRootUrl() + build.getUrl();
-        stringBuilder.append("\nBuild results available at: ").append(buildUrl);
+        stringBuilder.append("\nBuild results available at: ")
+            .append("[").append(buildUrl).append("](").append(buildUrl).append(")"); // Link in markdown format
         _repository.createNote(cause.getMergeRequestId(), stringBuilder.toString());
     }
 
