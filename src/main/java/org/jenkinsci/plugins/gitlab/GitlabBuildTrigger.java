@@ -179,10 +179,6 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
             return super.configure(req, formData);
         }
 
-        public FormValidation doCheckCron(@QueryParameter String value){
-            return (new TimerTrigger.DescriptorImpl().doCheckSpec(value));
-        }
-
         public FormValidation doCheckGitlabHostUrl(@QueryParameter String value) {
             if (!value.isEmpty()) {
                 return FormValidation.ok();
