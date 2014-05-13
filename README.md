@@ -35,24 +35,31 @@ request indicating whether the merge request was successful.
 * Create a new job by going to ``New Job``
 * Set the ``Project Name``
 * Feel free to specify the ``GitHub Project`` url as the url for the Gitlab project (if you have the GitHub plugin installed)
-* In the ``SCM`` section:
+* In the ``Source Code Management`` section:
     * Click ``Git`` and enter your Repositroy URL and in Advanced set its Name to ``origin``
     * For merge requests from forked repositories add another repository with Repository URL ``${gitlabSourceRepository}`` and in Advanced set Name to ``${gitlabSourceName}``
     * In ``Branch Specifier`` enter ``origin/${gitlabSourceBranch}`` or for merge requests from forked repositories enter ``${gitlabSourceName}/${gitlabSourceBranch}``
-    * Open the Advanced options
-    * Tick the ``Merge before build`` option and specify the name of the repository as ``origin`` (if origin corresponds to Gitlab)
-      and enter the ``Branch to merge to`` as ``${gitlabTargetBranch}``
-    * **Ensure ``Prune remote branches before build`` is left unticked**
+    * In the ``Additional Behaviours`` section:
+        * Click the ``Add`` drop down button and the ``Merge before build`` item
+        * Specify the name of the repository as ``origin`` (if origin corresponds to Gitlab) and enter the
+          ``Branch to merge to`` as ``${gitlabTargetBranch}``
+        * **Ensure ``Prune stale remote-tracking branches`` is not added**
 * In the ``Build Triggers`` section:
     * Check the ``Gitlab Merge Requests Builder``
     * Enter the ``Gitlab Project Path``, this might be something like ``gitlabhq/gitlabhq``
 * Configure any other pre build, build or post build actions as necessary
 * ``Save`` to preserve your changes
 
-You can trigger a job a manually by clicking ``This build is parameterized`` and adding the relevant build parameters. These include:
+You can trigger a job a manually by clicking ``This build is parameterized`` and adding the relevant build parameters.
+These include:
+
+* gitlabSourceRepository (for MRs from forked repos)
+* gitlabSourceName (for MRs from forked repos)
 * gitlabSourceBranch
 * gitlabTargetBranch
 * gitlabMergeRequestId
+
+Note that a manually triggered build will not add build triggered/succeeded/failed comments to the merge request.
 
 ## Contributing
 
