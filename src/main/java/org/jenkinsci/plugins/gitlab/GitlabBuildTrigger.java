@@ -16,7 +16,6 @@ import hudson.model.ParametersAction;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.StringParameterValue;
 import hudson.model.queue.QueueTaskFuture;
-import hudson.triggers.TimerTrigger;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
 import hudson.util.FormValidation;
@@ -177,10 +176,6 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
             _gitlab.get().ignoreCertificateErrors(_ignoreCertificateErrors);
 
             return super.configure(req, formData);
-        }
-
-        public FormValidation doCheckCron(@QueryParameter String value){
-            return (new TimerTrigger.DescriptorImpl().doCheckSpec(value));
         }
 
         public FormValidation doCheckGitlabHostUrl(@QueryParameter String value) {
