@@ -14,7 +14,7 @@ request indicating whether the merge request was successful.
 ## Installation
 
 * Ensure that a Jenkins user exists within Gitlab and has access to the repository. Ensure that the user
-  has **Developer** level access to the project.
+  has **Reporter** level access to the project.
 * Install the plugin in Jenkins.
     * The plugin is hosted on the [Jenkins Plugin repository](https://wiki.jenkins-ci.org/display/JENKINS/Gitlab+Merge+Request+Builder+Plugin)
     * Go to ``Jenkins`` -> ``Manage Plugins`` -> ``Available``
