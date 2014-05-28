@@ -95,7 +95,7 @@ public class GitlabRepository {
 
     private GitlabProject getProjectForPath(String path) {
         try {
-            List<GitlabProject> projects = _builder.getGitlab().get().getAllProjects();
+            List<GitlabProject> projects = _builder.getGitlab().get().getProjects();
             for (GitlabProject project : projects) {
                 if (project.getPathWithNamespace().equals(path)) {
                     return project;
