@@ -159,16 +159,28 @@ public class GitlabMergeRequestWrapper {
                 }
             });
 
+            String botUsernameNormalized = this.normalizeUsername(GitlabBuildTrigger.getDesc().getBotUsername());
+
             for (GitlabNote note : notes) {
-                _logger.finest("Traversing notes. Author: " + note.getAuthor().getUsername());
-                if (note.getAuthor() != null &&
-                        note.getAuthor().getUsername().equals(GitlabBuildTrigger.getDesc().getBotUsername())) {
-                    lastJenkinsNote = note;
-                    break;
+                if (note.getAuthor() != null) {
+                    String noteAuthorNormalized = this.normalizeUsername(note.getAuthor().getUsername());
+                    _logger.finest(
+                        "Traversing notes. Author: " + note.getAuthor().getUsername() + "; " +
+                         "normalized: " + noteAuthorNormalized
+                    );
+
+                    if (noteAuthorNormalized.equals(botUsernameNormalized)) {
+                        lastJenkinsNote = note;
+                        break;
+                    }
                 }
             }
         }
         return lastJenkinsNote;
+    }
+
+    private String normalizeUsername(String username) {
+        return username.toLowerCase();
     }
 
     private GitlabCommit getLatestCommit(GitlabMergeRequest gitlabMergeRequest, GitlabAPI api) throws IOException {
