@@ -94,15 +94,19 @@ public class GitlabMergeRequestWrapper {
             GitlabCommit latestCommit = getLatestCommit(gitlabMergeRequest, api);
 
             if (lastJenkinsNote == null) {
+                _logger.info("Latest note from Jenkins is null");
                 _shouldRun = true;
             } else if (latestCommit == null) {
                 _logger.log(Level.SEVERE, "Failed to determine the lastest commit for merge request {" + gitlabMergeRequest.getId() + "}. This might be caused by a stalled MR in gitlab.");
                 return;
             } else {
+                _logger.info("Latest note from Jenkins: " + lastJenkinsNote.getId().toString());
                 _shouldRun = latestCommitIsNotReached(latestCommit);
+                _logger.info("Latest commit: " + latestCommit.getId());
             }
             if (_shouldRun) {
-            	_mergeRequestStatus.setLatestCommitOfMergeRequest(_id.toString(), latestCommit.getId());
+                _logger.info("Build is supposed to run");
+                _mergeRequestStatus.setLatestCommitOfMergeRequest(_id.toString(), latestCommit.getId());
             }
         } catch (IOException e) {
             _logger.log(Level.SEVERE, "Failed to fetch commits for Merge Request " + gitlabMergeRequest.getId());
@@ -132,15 +136,20 @@ public class GitlabMergeRequestWrapper {
     }
 
     private boolean latestCommitIsNotReached(GitlabCommit latestCommit) {
-    	String _lastCommit = _mergeRequestStatus.getLatestCommitOfMergeRequest(_id.toString());
-    	if (_lastCommit != null && _lastCommit.equals(latestCommit.getId())){
-    		return false;
-    	}
+        String _lastCommit = _mergeRequestStatus.getLatestCommitOfMergeRequest(_id.toString());
+        if (_lastCommit != null) {
+            _logger.info("Latest commit Jenkins remembers is " + _lastCommit);
+            return ! _lastCommit.equals(latestCommit.getId());
+        } else {
+            _logger.info("Jenkins does not remember any commit of this MR");
+        }
         return true;
     }
 
     private GitlabNote getJenkinsNote(GitlabMergeRequest gitlabMergeRequest, GitlabAPI api) throws IOException {
         List<GitlabNote> notes = api.getAllNotes(gitlabMergeRequest);
+        _logger.info("Notes found: " + Integer.toString(notes.size()));
+
         GitlabNote lastJenkinsNote = null;
 
         if (!notes.isEmpty()) {
@@ -151,6 +160,7 @@ public class GitlabMergeRequestWrapper {
             });
 
             for (GitlabNote note : notes) {
+                _logger.finest("Traversing notes. Author: " + note.getAuthor().getUsername());
                 if (note.getAuthor() != null &&
                         note.getAuthor().getUsername().equals(GitlabBuildTrigger.getDesc().getBotUsername())) {
                     lastJenkinsNote = note;
