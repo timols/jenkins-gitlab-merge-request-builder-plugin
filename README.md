@@ -46,7 +46,7 @@ request indicating whether the merge request was successful.
         * **Ensure ``Prune stale remote-tracking branches`` is not added**
 * In the ``Build Triggers`` section:
     * Check the ``Gitlab Merge Requests Builder``
-    * Enter the ``Gitlab Project Path``, this might be something like ``gitlabhq/gitlabhq``
+    * Enter the ``Gitlab Project Path``, this might be something like ``your_group/your_project`` for gitlab url ``http://git.tld/your_group/your_project``
 * Configure any other pre build, build or post build actions as necessary
 * ``Save`` to preserve your changes
 
