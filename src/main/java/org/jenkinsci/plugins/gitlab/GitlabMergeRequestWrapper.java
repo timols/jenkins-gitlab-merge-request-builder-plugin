@@ -53,6 +53,11 @@ public class GitlabMergeRequestWrapper {
     }
 
     public void check(GitlabMergeRequest gitlabMergeRequest) {
+
+        if (_mergeRequestStatus == null) {
+            _mergeRequestStatus = new GitlabMergeRequestStatus();
+        }
+
         if (_iid == null) {
             _iid = gitlabMergeRequest.getIid();
         }
@@ -82,6 +87,9 @@ public class GitlabMergeRequestWrapper {
 
             if (lastJenkinsNote == null) {
                 _shouldRun = true;
+            } else if (latestCommit == null) {
+                _logger.log(Level.SEVERE, "Failed to determine the lastest commit for merge request {" + gitlabMergeRequest.getId() + "}. This might be caused by a stalled MR in gitlab.");
+                return;
             } else {
                 _shouldRun = latestCommitIsNotReached(latestCommit);
             }
