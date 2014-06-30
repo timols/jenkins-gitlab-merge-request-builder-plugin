@@ -6,7 +6,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
 import org.gitlab.api.GitlabAPI;
 import org.gitlab.api.models.GitlabCommit;
 import org.gitlab.api.models.GitlabMergeRequest;
@@ -79,7 +81,13 @@ public class GitlabMergeRequestWrapper {
                 return;
             }
         }
-        
+        if (isAllowedByTargetBranchRegex(_targetBranch)) {
+            _logger.log(Level.INFO, "The target regex matches the target branch {" + _targetBranch + "}. Source branch {" + _sourceBranch + "}");
+            _shouldRun = true;
+        } else {
+            _logger.log(Level.INFO, "The target regex did not match the target branch {" + _targetBranch + "}. Not triggering this job. Source branch {" + _sourceBranch + "}");
+            return;
+        }
         try {
             GitlabAPI api = _builder.getGitlab().get();
             GitlabNote lastJenkinsNote = getJenkinsNote(gitlabMergeRequest, api);
@@ -103,6 +111,24 @@ public class GitlabMergeRequestWrapper {
         if (_shouldRun) {
             build();
         }
+    }
+
+    /**
+     * Check whether the branchName can be matched using the target branch 
+     * regex. Empty regex patterns will cause this method to return true. 
+     * 
+     * @param branchName
+     * @return true when the name can be matched or when the regex is empty.
+     *         Otherwise false.
+     */
+    public boolean isAllowedByTargetBranchRegex(String branchName) {
+        String regex =  _builder.getTrigger().getTargetBranchRegex();
+        // Allow when no pattern has been specified. (default behavior)
+        if (StringUtils.isEmpty(regex)) {
+           return true;
+        }
+        Pattern pattern = Pattern.compile(regex);
+        return pattern.matcher(branchName).matches();
     }
 
     private boolean latestCommitIsNotReached(GitlabCommit latestCommit) {
