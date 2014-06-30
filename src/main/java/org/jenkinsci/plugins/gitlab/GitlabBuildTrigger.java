@@ -29,13 +29,15 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
 
     private final String _cron;
     private final String _projectPath;
+    private final String _targetBranchRegex;
     transient private GitlabMergeRequestBuilder _gitlabMergeRequestBuilder;
 
     @DataBoundConstructor
-    public GitlabBuildTrigger(String cron, String projectPath) throws ANTLRException {
+    public GitlabBuildTrigger(String cron, String projectPath, String targetBranchRegex) throws ANTLRException {
         super(cron);
         _cron = cron;
         _projectPath = projectPath;
+        _targetBranchRegex = targetBranchRegex;
     }
 
     @Override
@@ -122,6 +124,10 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
 
     public String getProjectPath() {
         return _projectPath;
+    }
+
+    public String getTargetBranchRegex() {
+        return _targetBranchRegex;
     }
 
     @Extension

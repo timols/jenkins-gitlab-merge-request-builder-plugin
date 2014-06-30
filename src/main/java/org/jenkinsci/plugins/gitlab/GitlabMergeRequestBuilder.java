@@ -32,6 +32,10 @@ public class GitlabMergeRequestBuilder {
         return this;
     }
 
+    public GitlabBuildTrigger getTrigger() {
+        return _trigger;
+    }
+
     public GitlabMergeRequestBuilder setProject(AbstractProject<?, ?> project) {
         _project = project;
 
