@@ -29,6 +29,7 @@ request indicating whether the merge request was successful.
 * Set/change any of the other available parameters as necessary. If you host Gitlab over an SSL connection
   you may want to enable ignoring certificate errors.
 * ``Save`` to preserve your changes.
+* Go to `Manage Jenkins` -> `Configure Global Security` and set `Markup Formatter` to *Raw HTML*. It will make Jenkins display links in build history properly.
 
 ## Creating a Job
 
