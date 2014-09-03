@@ -21,7 +21,7 @@ request indicating whether the merge request was successful.
     * Search for ``Gitlab Merge Request Builder``
     * And install it
     * Ensure you restart Jenkins
-* Go to ``Manage Jenkins`` -> ``Configure System`` -> ``Gitlab Merge Requests Builder``
+* Go to ``Manage Jenkins`` -> ``Configure System`` -> ``Gitlab Merge Request Builder``
 * Set the ``Gitlab Host URL`` to the base URL of your Gitlab server
 * Set your ``Jenkins Username`` for the Jenkins user (defaults to jenkins)
 * Set your ``Jenkins API Token`` for the Jenkins user. This can be found by logging into Gitlab as Jenkins
