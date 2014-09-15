@@ -49,6 +49,8 @@ request indicating whether the merge request was successful.
     * Check the ``Gitlab Merge Requests Builder``
     * Enter the ``Gitlab Project Path``, this might be something like ``your_group/your_project`` for gitlab url ``http://git.tld/your_group/your_project``
     * The ``Target Branch Regex`` may be configured to whitelist this job for certain target branches. If left empty, every valid merge request for the configured project path will trigger this job.
+    * The ``Use HTTP(S) URL`` checkbox should be used if you want Jenkins to
+clone/fetch using HTTP(S) instead of SSH.
 * Configure any other pre build, build or post build actions as necessary
 * ``Save`` to preserve your changes
 

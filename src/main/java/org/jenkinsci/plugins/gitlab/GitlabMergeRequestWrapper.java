@@ -220,7 +220,11 @@ public class GitlabMergeRequestWrapper {
     }
 
     public String getSourceRepository() {
-        return _sourceProject.getSshUrl();
+        if (_builder.getTrigger().getUseHttpUrl()) {
+            return _sourceProject.getHttpUrl();
+        } else {
+            return _sourceProject.getSshUrl();
+        }
     }
 
     public String getSourceBranch() {
