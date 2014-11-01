@@ -19,6 +19,7 @@ import hudson.model.queue.QueueTaskFuture;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
 import hudson.util.FormValidation;
+import hudson.util.Secret;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -142,7 +143,8 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
     public static final class GitlabBuildTriggerDescriptor extends TriggerDescriptor {
         private String _botUsername = "jenkins";
         private String _gitlabHostUrl;
-        private String _botApiToken;
+        @Deprecated private String _botApiToken;
+        private Secret _botApiTokenSecret;
         private String _cron = "H/5 * * * *";
         private boolean _enableBuildTriggeredMessage = true;
         private String _successMessage = "Build finished.  Tests PASSED.";
@@ -157,6 +159,10 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
             load();
             if (_jobs == null) {
                 _jobs = new HashMap<String, Map<Integer, GitlabMergeRequestWrapper>>();
+            }
+            if (_botApiTokenSecret == null) {
+                _botApiTokenSecret = Secret.fromString(_botApiToken);
+                _botApiToken = null;
             }
         }
 
@@ -173,7 +179,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
         @Override
         public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
             _botUsername = formData.getString("botUsername");
-            _botApiToken = formData.getString("botApiToken");
+            _botApiTokenSecret = Secret.fromString(formData.getString("botApiTokenSecret"));
             _gitlabHostUrl = formData.getString("gitlabHostUrl");
             _cron = formData.getString("cron");
             _enableBuildTriggeredMessage = formData.getBoolean("enableBuildTriggeredMessage");
@@ -268,8 +274,16 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
             return result;
         }
 
+        /**
+         * @deprecated use {@link #getBotApiTokenSecret()}.
+         */
+        @Deprecated
         public String getBotApiToken() {
-            return _botApiToken;
+            return _botApiTokenSecret.getPlainText();
+        }
+
+        public Secret getBotApiTokenSecret() {
+            return _botApiTokenSecret;
         }
 
         public String getGitlabHostUrl() {
