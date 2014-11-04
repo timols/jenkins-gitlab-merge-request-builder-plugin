@@ -145,7 +145,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
         private String _gitlabHostUrl;
         @Deprecated private String _botApiToken;
         private Secret _botApiTokenSecret;
-        private String _cron = "*/5 * * * *";
+        private String _cron = "H/5 * * * *";
         private boolean _enableBuildTriggeredMessage = true;
         private String _successMessage = "Build finished.  Tests PASSED.";
         private String _unstableMessage = "Build finished.  Tests FAILED.";
