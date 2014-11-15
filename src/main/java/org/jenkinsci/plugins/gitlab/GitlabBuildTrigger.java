@@ -36,7 +36,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
     transient private GitlabMergeRequestBuilder _gitlabMergeRequestBuilder;
 
     @DataBoundConstructor
-    public GitlabBuildTrigger(String cron, String projectPath, String targetBranchRegex, Boolean useHttpUrl,boolean autoCloseFailed ) throws ANTLRException {
+    public GitlabBuildTrigger(String cron, String projectPath, String targetBranchRegex, Boolean useHttpUrl, boolean autoCloseFailed ) throws ANTLRException {
         super(cron);
         _cron = cron;
         _projectPath = projectPath;

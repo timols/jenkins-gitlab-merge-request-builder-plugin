@@ -119,8 +119,8 @@ public class GitlabRepository {
         return getProjectUrl() + GitlabMergeRequest.URL + "/" + mergeRequestIid;
     }
 
-    public GitlabNote createNote(Integer mergeRequestId, String message,boolean shouldClose) {
+    public GitlabNote createNote(Integer mergeRequestId, String message, boolean shouldClose) {
         GitlabMergeRequestWrapper gitlabMergeRequestWrapper = _mergeRequests.get(mergeRequestId);
-        return gitlabMergeRequestWrapper.createNote(message,shouldClose);
+        return gitlabMergeRequestWrapper.createNote(message, shouldClose);
     }
 }

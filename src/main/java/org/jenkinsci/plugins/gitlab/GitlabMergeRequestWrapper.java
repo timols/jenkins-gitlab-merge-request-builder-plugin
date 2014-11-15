@@ -236,7 +236,7 @@ public class GitlabMergeRequestWrapper {
     }
 
  
-    public GitlabNote createNote(String message,boolean shouldClose) {
+    public GitlabNote createNote(String message, boolean shouldClose) {
         GitlabMergeRequest mergeRequest = new GitlabMergeRequest();
         mergeRequest.setId(_id);
         mergeRequest.setIid(_iid);
@@ -259,7 +259,7 @@ public class GitlabMergeRequestWrapper {
         String message = _builder.getBuilds().build(this);
 
         if (_builder.isEnableBuildTriggeredMessage()) {
-            createNote(message,false);
+            createNote(message, false);
             _logger.log(Level.INFO, message);
         }
     }
