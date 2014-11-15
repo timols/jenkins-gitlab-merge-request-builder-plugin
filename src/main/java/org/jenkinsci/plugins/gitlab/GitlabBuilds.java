@@ -63,9 +63,11 @@ public class GitlabBuilds {
         if (cause == null) {
             return;
         }
-
+        
+        boolean stable = false;
         StringBuilder stringBuilder = new StringBuilder();
         if (build.getResult() == Result.SUCCESS) {
+            stable=true;
             stringBuilder.append(_trigger.getDescriptor().getSuccessMessage());
         } else if (build.getResult() == Result.UNSTABLE) {
             stringBuilder.append(_trigger.getDescriptor().getUnstableMessage());
@@ -76,7 +78,12 @@ public class GitlabBuilds {
         String buildUrl = Jenkins.getInstance().getRootUrl() + build.getUrl();
         stringBuilder.append("\nBuild results available at: ")
             .append("[").append(buildUrl).append("](").append(buildUrl).append(")"); // Link in markdown format
-        _repository.createNote(cause.getMergeRequestId(), stringBuilder.toString());
+        
+        boolean shouldClose=false;
+        if(!stable && _trigger.getAutoCloseFailed()){
+            shouldClose=true;
+        }
+        _repository.createNote(cause.getMergeRequestId(), stringBuilder.toString(),shouldClose);
     }
 
     private String getOnStartedMessage(GitlabCause cause) {

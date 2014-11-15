@@ -235,13 +235,18 @@ public class GitlabMergeRequestWrapper {
         return _targetBranch;
     }
 
-    public GitlabNote createNote(String message) {
+ 
+    public GitlabNote createNote(String message,boolean shouldClose) {
         GitlabMergeRequest mergeRequest = new GitlabMergeRequest();
         mergeRequest.setId(_id);
         mergeRequest.setIid(_iid);
         mergeRequest.setProjectId(_project.getId());
 
         try {
+            if(shouldClose){
+                String tailUrl = _project.URL + "/" + _project.getId() + "/merge_request/" + _id + "?state_event=close";
+                _builder.getGitlab().get().retrieve().method("PUT").to(tailUrl, Void.class);
+            }
             return _builder.getGitlab().get().createNote(mergeRequest, message);
         } catch (IOException e) {
             _logger.log(Level.SEVERE, "Failed to create note for merge request " + _id, e);
@@ -254,7 +259,7 @@ public class GitlabMergeRequestWrapper {
         String message = _builder.getBuilds().build(this);
 
         if (_builder.isEnableBuildTriggeredMessage()) {
-            createNote(message);
+            createNote(message,false);
             _logger.log(Level.INFO, message);
         }
     }
