@@ -36,10 +36,11 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
     private final boolean _useHttpUrl;
     private final String _assigneeFilter;
     private final String _triggerComment;
+    private final boolean _autoCloseFailed;
     transient private GitlabMergeRequestBuilder _gitlabMergeRequestBuilder;
 
     @DataBoundConstructor
-    public GitlabBuildTrigger(String cron, String projectPath, String targetBranchRegex, boolean useHttpUrl, String assigneeFilter, String triggerComment) throws ANTLRException {
+    public GitlabBuildTrigger(String cron, String projectPath, String targetBranchRegex, boolean useHttpUrl, String assigneeFilter, String triggerComment, boolean autoCloseFailed) throws ANTLRException {
         super(cron);
         _cron = cron;
         _projectPath = projectPath;
@@ -47,6 +48,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
         _useHttpUrl = useHttpUrl;
         _assigneeFilter = assigneeFilter;
         _triggerComment = triggerComment;
+        _autoCloseFailed = autoCloseFailed;
     }
 
     @Override
@@ -163,6 +165,10 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
     
     public String getTriggerComment() {
         return _triggerComment;
+    }
+
+    public boolean getAutoCloseFailed(){
+        return _autoCloseFailed;
     }
 
     @Extension
