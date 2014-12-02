@@ -10,6 +10,14 @@
     <f:entry title="${%Crontab line}" field="cron" help="/descriptor/hudson.triggers.TimerTrigger/help/spec">
         <f:textbox default="${descriptor.cron}" checkUrl="'descriptorByName/hudson.triggers.TimerTrigger/checkSpec?value=' + encodeURIComponent(this.value)"/>
     </f:entry>
+    <f:entry title="Assignee filter" field="assigneeFilter"
+            description="Trigger build only if merge request is assigned to assignee username.">
+        <f:textbox default="${descriptor.assigneeFilter}"/>
+    </f:entry>
+    <f:entry title="Trigger comment" field="triggerComment"
+            description="Force build if this comment is the last in merge reguest.">
+        <f:textbox />
+    </f:entry>
     <f:entry title="Use HTTP(s) URL" field="useHttpUrl"
             description="Use the HTTP(S) URL to fetch/clone repository">
         <f:checkbox />

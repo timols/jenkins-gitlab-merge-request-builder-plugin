@@ -24,7 +24,7 @@ public class GitlabMergeRequestWrapper {
     private GitlabProject _sourceProject;
     private String _sourceBranch;
     private String _targetBranch;
-
+    
     private boolean _shouldRun = false;
     
     private GitlabMergeRequestStatus _mergeRequestStatus;
@@ -38,6 +38,7 @@ public class GitlabMergeRequestWrapper {
         _iid = mergeRequest.getIid();
         _author = mergeRequest.getAuthor().getUsername();
         _sourceBranch = mergeRequest.getSourceBranch();
+        
         try {
             _sourceProject = getSourceProject(mergeRequest, builder.getGitlab().get());
         } catch (IOException e) {
@@ -91,23 +92,33 @@ public class GitlabMergeRequestWrapper {
         try {
             GitlabAPI api = _builder.getGitlab().get();
             GitlabNote lastJenkinsNote = getJenkinsNote(gitlabMergeRequest, api);
+            GitlabNote lastNote = getLastNote(gitlabMergeRequest, api);
             GitlabCommit latestCommit = getLatestCommit(gitlabMergeRequest, api);
-
+            String assigneeFilter = _builder.getTrigger().getAssigneeFilter();
+            String assignee = getAssigneeUsername(gitlabMergeRequest);;
+            String triggerComment = _builder.getTrigger().getTriggerComment();
             if (lastJenkinsNote == null) {
                 _logger.info("Latest note from Jenkins is null");
-                _shouldRun = true;
             } else if (latestCommit == null) {
                 _logger.log(Level.SEVERE, "Failed to determine the lastest commit for merge request {" + gitlabMergeRequest.getId() + "}. This might be caused by a stalled MR in gitlab.");
                 return;
             } else {
-                _logger.info("Latest note from Jenkins: " + lastJenkinsNote.getId().toString());
+                _logger.info("Latest note from Jenkins: " + lastJenkinsNote.getBody());
                 _shouldRun = latestCommitIsNotReached(latestCommit);
                 _logger.info("Latest commit: " + latestCommit.getId());
+                
+                if (lastNote.getBody().equals(triggerComment)) {
+                    _shouldRun = true;
+                }
             }
             if (_shouldRun) {
-                _logger.info("Build is supposed to run");
-                _mergeRequestStatus.setLatestCommitOfMergeRequest(_id.toString(), latestCommit.getId());
-            }
+                if (assigneeFilterMatch(assigneeFilter, assignee)) {
+                    _logger.info("Build is supposed to run");
+                    _mergeRequestStatus.setLatestCommitOfMergeRequest(_id.toString(), latestCommit.getId());
+                } else {
+                    _shouldRun = false;
+                }
+                            }
         } catch (IOException e) {
             _logger.log(Level.SEVERE, "Failed to fetch commits for Merge Request " + gitlabMergeRequest.getId());
         }
@@ -135,6 +146,29 @@ public class GitlabMergeRequestWrapper {
         return pattern.matcher(branchName).matches();
     }
 
+    private String getAssigneeUsername(GitlabMergeRequest gitlabMergeRequest) {
+        String assigneeUsername = "";
+        if (gitlabMergeRequest.getAssignee() != null) {
+            assigneeUsername = gitlabMergeRequest.getAssignee().getUsername();
+        } 
+        return assigneeUsername;
+    }
+    
+    private boolean assigneeFilterMatch(String assigneeFilter, String assignee) {
+        boolean shouldRun = true;
+        if (assigneeFilter.equals("")) {
+            shouldRun = true;
+        } else {
+            if(assignee.equals(assigneeFilter)) {
+                shouldRun = true;
+            } else {
+                shouldRun = false;
+                _logger.info("Assignee: " + assignee + " does not match " + assigneeFilter);
+            }
+        }
+        return shouldRun;
+    }
+    
     private boolean latestCommitIsNotReached(GitlabCommit latestCommit) {
         String _lastCommit = _mergeRequestStatus.getLatestCommitOfMergeRequest(_id.toString());
         if (_lastCommit != null) {
@@ -145,7 +179,24 @@ public class GitlabMergeRequestWrapper {
         }
         return true;
     }
+    
+    private GitlabNote getLastNote(GitlabMergeRequest gitlabMergeRequest, GitlabAPI api) throws IOException {
+        List<GitlabNote> notes = api.getAllNotes(gitlabMergeRequest);
+        
+        GitlabNote lastNote = null;
 
+        if (!notes.isEmpty()) {
+            Collections.sort(notes, new Comparator<GitlabNote>() {
+                public int compare(GitlabNote o1, GitlabNote o2) {
+                    return o2.getCreatedAt().compareTo(o1.getCreatedAt());
+                }
+            });
+            lastNote = notes.get(0);
+            _logger.info("Last note found: " + lastNote.getBody());
+        }
+        return lastNote;
+    }
+    
     private GitlabNote getJenkinsNote(GitlabMergeRequest gitlabMergeRequest, GitlabAPI api) throws IOException {
         List<GitlabNote> notes = api.getAllNotes(gitlabMergeRequest);
         _logger.info("Notes found: " + Integer.toString(notes.size()));
@@ -214,7 +265,7 @@ public class GitlabMergeRequestWrapper {
     public String getAuthor() {
         return _author;
     }
-
+    
     public String getSourceName() {
         return _sourceProject.getPathWithNamespace();
     }

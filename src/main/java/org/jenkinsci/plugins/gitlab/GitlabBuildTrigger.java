@@ -31,15 +31,19 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
     private final String _projectPath;
     private final String _targetBranchRegex;
     private final Boolean _useHttpUrl;
+    private final String _assigneeFilter;
+    private final String _triggerComment;
     transient private GitlabMergeRequestBuilder _gitlabMergeRequestBuilder;
 
     @DataBoundConstructor
-    public GitlabBuildTrigger(String cron, String projectPath, String targetBranchRegex, Boolean useHttpUrl ) throws ANTLRException {
+    public GitlabBuildTrigger(String cron, String projectPath, String targetBranchRegex, Boolean useHttpUrl, String assigneeFilter, String triggerComment) throws ANTLRException {
         super(cron);
         _cron = cron;
         _projectPath = projectPath;
         _targetBranchRegex = targetBranchRegex;
         _useHttpUrl = useHttpUrl;
+        _assigneeFilter = assigneeFilter;
+        _triggerComment = triggerComment;
     }
 
     @Override
@@ -135,6 +139,14 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
     public Boolean getUseHttpUrl() {
         return _useHttpUrl;
     }
+    
+    public String getAssigneeFilter() {
+        return _assigneeFilter;
+    }
+    
+    public String getTriggerComment() {
+        return _triggerComment;
+    }
 
     @Extension
     public static final GitlabBuildTriggerDescriptor DESCRIPTOR = new GitlabBuildTriggerDescriptor();
@@ -144,6 +156,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
         private String _gitlabHostUrl;
         private String _botApiToken;
         private String _cron = "*/5 * * * *";
+        private String _assigneeFilter = "jenkins";
         private boolean _enableBuildTriggeredMessage = true;
         private String _successMessage = "Build finished.  Tests PASSED.";
         private String _unstableMessage = "Build finished.  Tests FAILED.";
@@ -176,6 +189,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
             _botApiToken = formData.getString("botApiToken");
             _gitlabHostUrl = formData.getString("gitlabHostUrl");
             _cron = formData.getString("cron");
+            _assigneeFilter = formData.getString("assigneeFilter");
             _enableBuildTriggeredMessage = formData.getBoolean("enableBuildTriggeredMessage");
             _successMessage = formData.getString("successMessage");
             _unstableMessage = formData.getString("unstableMessage");
@@ -216,6 +230,10 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
 
         public String getCron() {
             return _cron;
+        }
+        
+        public String getAssigneeFilter() {
+            return _assigneeFilter;
         }
 
         public boolean isEnableBuildTriggeredMessage() {
