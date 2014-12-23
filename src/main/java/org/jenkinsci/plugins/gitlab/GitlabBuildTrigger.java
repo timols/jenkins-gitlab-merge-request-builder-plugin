@@ -31,11 +31,11 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
     private final String _cron;
     private final String _projectPath;
     private final String _targetBranchRegex;
-    private final Boolean _useHttpUrl;
+    private final boolean _useHttpUrl;
     transient private GitlabMergeRequestBuilder _gitlabMergeRequestBuilder;
 
     @DataBoundConstructor
-    public GitlabBuildTrigger(String cron, String projectPath, String targetBranchRegex, Boolean useHttpUrl ) throws ANTLRException {
+    public GitlabBuildTrigger(String cron, String projectPath, String targetBranchRegex, boolean useHttpUrl ) throws ANTLRException {
         super(cron);
         _cron = cron;
         _projectPath = projectPath;
@@ -133,7 +133,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
         return _targetBranchRegex;
     }
 
-    public Boolean getUseHttpUrl() {
+    public boolean getUseHttpUrl() {
         return _useHttpUrl;
     }
 
