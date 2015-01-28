@@ -95,7 +95,7 @@ public class GitlabMergeRequestWrapper {
 
             if (lastJenkinsNote == null) {
                 _logger.info("Latest note from Jenkins is null");
-                _shouldRun = true;
+                _shouldRun = latestCommitIsNotReached(latestCommit);
             } else if (latestCommit == null) {
                 _logger.log(Level.SEVERE, "Failed to determine the lastest commit for merge request {" + gitlabMergeRequest.getId() + "}. This might be caused by a stalled MR in gitlab.");
                 return;
