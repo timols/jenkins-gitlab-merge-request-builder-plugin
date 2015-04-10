@@ -66,11 +66,23 @@ public class GitlabBuilds {
 
         StringBuilder stringBuilder = new StringBuilder();
         if (build.getResult() == Result.SUCCESS) {
-            stringBuilder.append(_trigger.getDescriptor().getSuccessMessage());
+        	if (build.getBuildVariables().containsKey("gitlabSuccessMessage")) {
+        		stringBuilder.append(build.getBuildVariables().get("gitlabSuccessMessage"));
+        	} else {
+        		stringBuilder.append(_trigger.getDescriptor().getSuccessMessage());
+        	}
         } else if (build.getResult() == Result.UNSTABLE) {
-            stringBuilder.append(_trigger.getDescriptor().getUnstableMessage());
+        	if (build.getBuildVariables().containsKey("gitlabUnstableMessage")) {
+        		stringBuilder.append(build.getBuildVariables().get("gitlabUnstableMessage"));
+        	} else {
+        		stringBuilder.append(_trigger.getDescriptor().getUnstableMessage());
+        	}
         } else {
-            stringBuilder.append(_trigger.getDescriptor().getFailureMessage());
+        	if (build.getBuildVariables().containsKey("gitlabFailureMessage")) {
+        		stringBuilder.append(build.getBuildVariables().get("gitlabFailureMessage"));
+        	} else {
+        		stringBuilder.append(_trigger.getDescriptor().getFailureMessage());
+        	}
         }
 
         String buildUrl = Jenkins.getInstance().getRootUrl() + build.getUrl();
