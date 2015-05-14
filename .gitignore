@@ -9,3 +9,5 @@ work/*
 .classpath
 .project
 .settings
+/bin/
+.gradle
