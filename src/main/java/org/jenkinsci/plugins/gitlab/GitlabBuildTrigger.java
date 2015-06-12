@@ -19,6 +19,7 @@ import hudson.model.queue.QueueTaskFuture;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
 import hudson.util.FormValidation;
+import hudson.util.Secret;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -30,13 +31,13 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
     private final String _cron;
     private final String _projectPath;
     private final String _targetBranchRegex;
-    private final Boolean _useHttpUrl;
+    private final boolean _useHttpUrl;
     private final String _assigneeFilter;
     private final String _triggerComment;
     transient private GitlabMergeRequestBuilder _gitlabMergeRequestBuilder;
 
     @DataBoundConstructor
-    public GitlabBuildTrigger(String cron, String projectPath, String targetBranchRegex, Boolean useHttpUrl, String assigneeFilter, String triggerComment) throws ANTLRException {
+    public GitlabBuildTrigger(String cron, String projectPath, String targetBranchRegex, boolean useHttpUrl, String assigneeFilter, String triggerComment) throws ANTLRException {
         super(cron);
         _cron = cron;
         _projectPath = projectPath;
@@ -136,7 +137,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
         return _targetBranchRegex;
     }
 
-    public Boolean getUseHttpUrl() {
+    public boolean getUseHttpUrl() {
         return _useHttpUrl;
     }
     
@@ -154,9 +155,10 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
     public static final class GitlabBuildTriggerDescriptor extends TriggerDescriptor {
         private String _botUsername = "jenkins";
         private String _gitlabHostUrl;
-        private String _botApiToken;
-        private String _cron = "*/5 * * * *";
         private String _assigneeFilter = "jenkins";
+        @Deprecated private String _botApiToken;
+        private Secret _botApiTokenSecret;
+        private String _cron = "H/5 * * * *";
         private boolean _enableBuildTriggeredMessage = true;
         private String _successMessage = "Build finished.  Tests PASSED.";
         private String _unstableMessage = "Build finished.  Tests FAILED.";
@@ -170,6 +172,10 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
             load();
             if (_jobs == null) {
                 _jobs = new HashMap<String, Map<Integer, GitlabMergeRequestWrapper>>();
+            }
+            if (_botApiTokenSecret == null) {
+                _botApiTokenSecret = Secret.fromString(_botApiToken);
+                _botApiToken = null;
             }
         }
 
@@ -186,7 +192,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
         @Override
         public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
             _botUsername = formData.getString("botUsername");
-            _botApiToken = formData.getString("botApiToken");
+            _botApiTokenSecret = Secret.fromString(formData.getString("botApiTokenSecret"));
             _gitlabHostUrl = formData.getString("gitlabHostUrl");
             _cron = formData.getString("cron");
             _assigneeFilter = formData.getString("assigneeFilter");
@@ -286,8 +292,16 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
             return result;
         }
 
+        /**
+         * @deprecated use {@link #getBotApiTokenSecret()}.
+         */
+        @Deprecated
         public String getBotApiToken() {
-            return _botApiToken;
+            return _botApiTokenSecret.getPlainText();
+        }
+
+        public Secret getBotApiTokenSecret() {
+            return _botApiTokenSecret;
         }
 
         public String getGitlabHostUrl() {

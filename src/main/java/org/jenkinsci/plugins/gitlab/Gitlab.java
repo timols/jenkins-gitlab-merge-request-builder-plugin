@@ -9,7 +9,7 @@ public class Gitlab {
     private GitlabAPI _api;
 
     private void connect() {
-        String privateToken = GitlabBuildTrigger.getDesc().getBotApiToken();
+        String privateToken = GitlabBuildTrigger.getDesc().getBotApiTokenSecret().getPlainText();
         String apiUrl = GitlabBuildTrigger.getDesc().getGitlabHostUrl();
         _api = GitlabAPI.connect(apiUrl, privateToken);
     }

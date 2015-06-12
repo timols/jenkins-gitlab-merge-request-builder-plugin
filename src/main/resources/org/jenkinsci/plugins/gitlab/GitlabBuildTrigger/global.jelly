@@ -8,9 +8,9 @@
            description="Username for jenkins to use on Gitlab">
       <f:textbox/>
     </f:entry>
-    <f:entry title="Jenkins API Token" field="botApiToken"
+    <f:entry title="Jenkins API Token" field="botApiTokenSecret"
            description="API Token for the Jenkins user">
-      <f:textbox/>
+      <f:password/>
     </f:entry>
     <f:entry title="${%Crontab line}" field="cron" help="/descriptor/hudson.triggers.TimerTrigger/help/spec">
       <f:textbox default="H/5 * * * *" checkUrl="'descriptorByName/hudson.triggers.TimerTrigger/checkSpec?value=' + encodeURIComponent(this.value)"/>
