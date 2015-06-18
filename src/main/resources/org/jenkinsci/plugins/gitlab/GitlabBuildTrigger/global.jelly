@@ -15,6 +15,10 @@
     <f:entry title="${%Crontab line}" field="cron" help="/descriptor/hudson.triggers.TimerTrigger/help/spec">
       <f:textbox default="H/5 * * * *" checkUrl="'descriptorByName/hudson.triggers.TimerTrigger/checkSpec?value=' + encodeURIComponent(this.value)"/>
     </f:entry>
+    <f:entry title="Assignee Filter" field="assigneeFilter"
+        description="Trigger build only if merge request is assigned to assignee username. No value will always trigger job, regardless of assignee.">
+      <f:textbox default="jenkins"/>
+    </f:entry>
     <f:entry title="${%Enable build triggered message}" field="enableBuildTriggeredMessage">
       <f:checkbox />
     </f:entry>
