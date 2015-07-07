@@ -1,5 +1,7 @@
 package org.jenkinsci.plugins.gitlab;
 
+import java.util.Map;
+
 import hudson.model.Cause;
 
 public class GitlabCause extends Cause {
@@ -9,15 +11,17 @@ public class GitlabCause extends Cause {
     private final String _sourceRepository;
     private final String _sourceBranch;
     private final String _targetBranch;
+	private final Map<String, String> _customParameters;
 
     public GitlabCause(Integer mergeRequestId, Integer mergeRequestIid, String sourceName,
-            String sourceRepository, String sourceBranch, String targetBranch) {
+            String sourceRepository, String sourceBranch, String targetBranch, Map<String, String> customParameters) {
         _mergeRequestId = mergeRequestId;
         _mergeRequestIid = mergeRequestIid;
         _sourceName = sourceName;
         _sourceRepository = sourceRepository;
         _sourceBranch = sourceBranch;
         _targetBranch = targetBranch;
+		_customParameters = customParameters;
     }
 
 
@@ -50,4 +54,8 @@ public class GitlabCause extends Cause {
     public String getTargetBranch() {
         return _targetBranch;
     }
+    
+    public Map<String, String> getCustomParameters() {
+		return _customParameters;
+	}
 }
