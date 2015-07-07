@@ -3,9 +3,12 @@ package org.jenkinsci.plugins.gitlab;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
@@ -119,13 +122,13 @@ public class GitlabMergeRequestWrapper {
                 } else {
                     _shouldRun = false;
                 }
-                            }
+            }
+            if (_shouldRun) {
+            	Map<String, String> customParameters = getSpecifiedCustomParameters(gitlabMergeRequest, api);
+            	build(customParameters);
+            }
         } catch (IOException e) {
             _logger.log(Level.SEVERE, "Failed to fetch commits for Merge Request " + gitlabMergeRequest.getId());
-        }
-
-        if (_shouldRun) {
-            build();
         }
     }
 
@@ -182,37 +185,60 @@ public class GitlabMergeRequestWrapper {
     }
     
     private GitlabNote getLastNote(GitlabMergeRequest gitlabMergeRequest, GitlabAPI api) throws IOException {
-        List<GitlabNote> notes = api.getAllNotes(gitlabMergeRequest);
+        List<GitlabNote> notes = getNotes(gitlabMergeRequest, api);
         
         GitlabNote lastNote = null;
 
         if (!notes.isEmpty()) {
-            Collections.sort(notes, new Comparator<GitlabNote>() {
-                public int compare(GitlabNote o1, GitlabNote o2) {
-                    return o2.getCreatedAt().compareTo(o1.getCreatedAt());
-                }
-            });
-            lastNote = notes.get(0);
+            lastNote = notes.get(notes.size()-1);
             _logger.info("Last note found: " + lastNote.getBody());
         }
         return lastNote;
     }
     
-    private GitlabNote getJenkinsNote(GitlabMergeRequest gitlabMergeRequest, GitlabAPI api) throws IOException {
+    private List<GitlabNote> getNotes(GitlabMergeRequest gitlabMergeRequest, GitlabAPI api) throws IOException {
         List<GitlabNote> notes = api.getAllNotes(gitlabMergeRequest);
+        
+        Collections.sort(notes, new Comparator<GitlabNote>() {
+            public int compare(GitlabNote o1, GitlabNote o2) {
+                return o1.getCreatedAt().compareTo(o2.getCreatedAt());
+            }
+        });
+        return notes;
+    }
+
+    private Map<String, String> getSpecifiedCustomParameters(GitlabMergeRequest gitlabMergeRequest, GitlabAPI api) throws IOException {
+        String botUsername = GitlabBuildTrigger.getDesc().getBotUsername();
+        // Mention the botUserName in the text using @[botUserName] to indicate a command to the bot. If that is followed by a semicolon and one of the two commands:
+        //  USE-PARAMETER for specifying a parameter using the format Key=Value
+        // or REMOVE-PARAMETER for removing a parameter with the given Key
+        Pattern searchPattern = Pattern.compile("@"+botUsername+"\\s*:\\s*(USE|REMOVE)-PARAMETER\\s*:\\s*(\\w+)\\s*(?:=\\s*(.*))?", Pattern.CASE_INSENSITIVE);
+        
+        Map<String, String> customParams = new HashMap<>();
+        for (GitlabNote note: getNotes(gitlabMergeRequest, api)) {
+            Matcher m = searchPattern.matcher(note.getBody());
+            // the command to the @botUserName can be given anywhere in the text
+            if (m.find()) {
+                if(m.group(1).equalsIgnoreCase("USE")) {
+                    customParams.put(m.group(2), m.group(3));
+                } else {
+                    customParams.remove(m.group(2));
+                }
+            }
+        }
+        return customParams;
+    }
+    
+    private GitlabNote getJenkinsNote(GitlabMergeRequest gitlabMergeRequest, GitlabAPI api) throws IOException {
+        List<GitlabNote> notes = getNotes(gitlabMergeRequest, api);
         _logger.info("Notes found: " + Integer.toString(notes.size()));
 
         GitlabNote lastJenkinsNote = null;
 
         if (!notes.isEmpty()) {
-            Collections.sort(notes, new Comparator<GitlabNote>() {
-                public int compare(GitlabNote o1, GitlabNote o2) {
-                    return o2.getCreatedAt().compareTo(o1.getCreatedAt());
-                }
-            });
-
             String botUsernameNormalized = this.normalizeUsername(GitlabBuildTrigger.getDesc().getBotUsername());
-
+            Collections.reverse(notes);
+            
             for (GitlabNote note : notes) {
                 if (note.getAuthor() != null) {
                     String noteAuthorNormalized = this.normalizeUsername(note.getAuthor().getUsername());
@@ -301,9 +327,9 @@ public class GitlabMergeRequestWrapper {
         }
     }
 
-    private void build() {
+    private void build(Map<String, String> customParameters) {
         _shouldRun = false;
-        String message = _builder.getBuilds().build(this);
+        String message = _builder.getBuilds().build(this, customParameters);
 
         if (_builder.isEnableBuildTriggeredMessage()) {
             createNote(message);

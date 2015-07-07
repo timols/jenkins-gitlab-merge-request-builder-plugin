@@ -6,6 +6,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+
 import antlr.ANTLRException;
 import hudson.Extension;
 import hudson.model.AbstractProject;
@@ -21,9 +26,6 @@ import hudson.triggers.TriggerDescriptor;
 import hudson.util.FormValidation;
 import hudson.util.Secret;
 import net.sf.json.JSONObject;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
 
 public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
     private static final Logger _logger = Logger.getLogger(GitlabBuildTrigger.class.getName());
@@ -72,6 +74,9 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
         values.put("gitlabSourceRepository", new StringParameterValue("gitlabSourceRepository", cause.getSourceRepository()));
         values.put("gitlabSourceBranch", new StringParameterValue("gitlabSourceBranch", cause.getSourceBranch()));
         values.put("gitlabTargetBranch", new StringParameterValue("gitlabTargetBranch", cause.getTargetBranch()));
+        for(Map.Entry<String, String> entry: cause.getCustomParameters().entrySet()) {
+        	values.put(entry.getKey(), new StringParameterValue(entry.getKey(), entry.getValue()));
+        }
 
         List<ParameterValue> listValues = new ArrayList<ParameterValue>(values.values());
         return this.job.scheduleBuild2(0, cause, new ParametersAction(listValues));

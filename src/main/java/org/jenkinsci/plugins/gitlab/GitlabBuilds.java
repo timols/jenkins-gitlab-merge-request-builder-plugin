@@ -1,8 +1,10 @@
 package org.jenkinsci.plugins.gitlab;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import hudson.model.AbstractBuild;
 import hudson.model.Cause;
 import hudson.model.Result;
@@ -19,20 +21,37 @@ public class GitlabBuilds {
         _repository = repository;
     }
 
-    public String build(GitlabMergeRequestWrapper mergeRequest) {
+    public String build(GitlabMergeRequestWrapper mergeRequest, Map<String, String> customParameters) {
         GitlabCause cause = new GitlabCause(mergeRequest.getId(), mergeRequest.getIid(),
                 mergeRequest.getSourceName(), mergeRequest.getSourceRepository(),
-                mergeRequest.getSourceBranch(), mergeRequest.getTargetBranch());
+                mergeRequest.getSourceBranch(), mergeRequest.getTargetBranch(), customParameters);
 
         QueueTaskFuture<?> build = _trigger.startJob(cause);
         if (build == null) {
             _logger.log(Level.SEVERE, "Job failed to start.");
         }
-        return "Build triggered.";
+        return withCustomParameters("Build triggered.", customParameters);
     }
 
 
-    private GitlabCause getCause(AbstractBuild build) {
+    private String withCustomParameters(String message, Map<String, String> customParameters) {
+    	if(customParameters.isEmpty()) {
+    		return message;
+    	}
+    	
+    	StringBuilder sb = new StringBuilder(message);
+    	sb.append("\n\nUsing custom parameters:");
+    	for(Map.Entry<String, String> entry: customParameters.entrySet()) {
+    		sb.append("\n* `");
+    		sb.append(entry.getKey());
+    		sb.append("`=`");
+    		sb.append(entry.getValue());
+    		sb.append("`");
+    	}
+		return sb.toString();
+	}
+
+	private GitlabCause getCause(AbstractBuild build) {
         Cause cause = build.getCause(GitlabCause.class);
 
         if (cause == null || !(cause instanceof GitlabCause)) {
