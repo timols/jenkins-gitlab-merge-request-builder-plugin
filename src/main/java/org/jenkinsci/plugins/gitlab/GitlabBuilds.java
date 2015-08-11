@@ -30,16 +30,15 @@ public class GitlabBuilds {
         if (build == null) {
             _logger.log(Level.SEVERE, "Job failed to start.");
         }
-        return withCustomParameters("Build triggered.", customParameters);
+        return withCustomParameters(new StringBuilder("Build triggered."), customParameters).toString();
     }
 
 
-    private String withCustomParameters(String message, Map<String, String> customParameters) {
+    private StringBuilder withCustomParameters(StringBuilder sb, Map<String, String> customParameters) {
     	if(customParameters.isEmpty()) {
-    		return message;
+    		return sb;
     	}
     	
-    	StringBuilder sb = new StringBuilder(message);
     	sb.append("\n\nUsing custom parameters:");
     	for(Map.Entry<String, String> entry: customParameters.entrySet()) {
     		sb.append("\n* `");
@@ -48,7 +47,8 @@ public class GitlabBuilds {
     		sb.append(entry.getValue());
     		sb.append("`");
     	}
-		return sb.toString();
+    	sb.append("\n\n");
+		return sb;
 	}
 
 	private GitlabCause getCause(AbstractBuild build) {
@@ -102,6 +102,10 @@ public class GitlabBuilds {
         	} else {
         		stringBuilder.append(_trigger.getDescriptor().getFailureMessage());
         	}
+        }
+        
+        if(!_trigger.getBuilder().isEnableBuildTriggeredMessage()) {
+        	withCustomParameters(stringBuilder, cause.getCustomParameters());
         }
 
         String buildUrl = Jenkins.getInstance().getRootUrl() + build.getUrl();
