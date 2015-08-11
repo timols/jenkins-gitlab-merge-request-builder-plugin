@@ -31,7 +31,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
+        <java.compiler.version>1.7</java.compiler.version>
+      </properties>
 
     <repositories>
         <repository>
@@ -71,10 +72,23 @@
       </dependency>
   </dependencies>
 
-    <pluginRepositories>
-        <pluginRepository>
-            <id>repo.jenkins-ci.org</id>
-            <url>http://repo.jenkins-ci.org/public/</url>
-        </pluginRepository>
-    </pluginRepositories>
+  <pluginRepositories>
+      <pluginRepository>
+          <id>repo.jenkins-ci.org</id>
+          <url>http://repo.jenkins-ci.org/public/</url>
+      </pluginRepository>
+  </pluginRepositories>
+
+  <build>
+      <plugins>
+          <plugin>
+              <artifactId>maven-compiler-plugin</artifactId>
+              <configuration>
+                  <source>${java.compiler.version}</source>
+                  <target>${java.compiler.version}</target>
+                  <encoding>${project.build.sourceEncoding}</encoding>
+              </configuration>
+          </plugin>
+      </plugins>
+  </build>
 </project>
