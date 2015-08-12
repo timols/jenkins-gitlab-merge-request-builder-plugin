@@ -63,7 +63,8 @@ These include:
 * gitlabTargetBranch
 * gitlabMergeRequestId
 
-Note that a manually triggered build will not add build triggered/succeeded/failed comments to the merge request.
+__Note:__  a manually triggered build will not add build triggered/succeeded/failed comments to the merge request.
+__Note:__  You should ensure that the 'Global Config user.name Value' and 'Global Config user.email Value' are both set for your git plugin.  In some cases, you will get an error indicating that a branch cannot be merged if these are not set.
 
 ## Contributing
 
