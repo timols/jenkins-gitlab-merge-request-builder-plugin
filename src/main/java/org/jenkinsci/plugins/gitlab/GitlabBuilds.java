@@ -118,7 +118,13 @@ public class GitlabBuilds {
         if(!stable && _trigger.getAutoCloseFailed()){
             shouldClose = true;
         }
-        _repository.createNote(cause.getMergeRequestId(), stringBuilder.toString(), shouldClose);
+
+        boolean shouldMerge = false;
+        if(stable && _trigger.getAutoMergePassed()){
+            shouldMerge = true;
+        }
+
+        _repository.createNote(cause.getMergeRequestId(), stringBuilder.toString(), shouldClose, shouldMerge);
     }
 
     private String getOnStartedMessage(GitlabCause cause) {
