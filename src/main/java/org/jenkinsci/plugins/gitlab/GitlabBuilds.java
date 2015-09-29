@@ -24,7 +24,7 @@ public class GitlabBuilds {
     public String build(GitlabMergeRequestWrapper mergeRequest, Map<String, String> customParameters) {
         GitlabCause cause = new GitlabCause(mergeRequest.getId(), mergeRequest.getIid(),
                 mergeRequest.getSourceName(), mergeRequest.getSourceRepository(),
-                mergeRequest.getSourceBranch(), mergeRequest.getTargetBranch(), customParameters);
+                mergeRequest.getSourceBranch(), mergeRequest.getTargetBranch(), customParameters, mergeRequest.getDescription());
 
         QueueTaskFuture<?> build = _trigger.startJob(cause);
         if (build == null) {

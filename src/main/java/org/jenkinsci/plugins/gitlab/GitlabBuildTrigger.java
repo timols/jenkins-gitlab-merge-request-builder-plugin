@@ -78,6 +78,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
         values.put("gitlabSourceRepository", new StringParameterValue("gitlabSourceRepository", cause.getSourceRepository()));
         values.put("gitlabSourceBranch", new StringParameterValue("gitlabSourceBranch", cause.getSourceBranch()));
         values.put("gitlabTargetBranch", new StringParameterValue("gitlabTargetBranch", cause.getTargetBranch()));
+        values.put("gitlabDescription", new StringParameterValue("gitlabDescription", cause.getDescription()));
         for(Map.Entry<String, String> entry: cause.getCustomParameters().entrySet()) {
         	values.put(entry.getKey(), new StringParameterValue(entry.getKey(), entry.getValue()));
         }
