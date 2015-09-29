@@ -330,11 +330,17 @@ public class GitlabMergeRequestWrapper {
                 }
                 _builder.getGitlab().get().retrieve().method("PUT").to(tailUrl, Void.class);
             }
+        } catch (IOException e) {
+            _logger.log(Level.SEVERE, "Failed to automatically merge/close the merge request " + _id, e);
+        }
+
+        try{
             return _builder.getGitlab().get().createNote(mergeRequest, message);
         } catch (IOException e) {
             _logger.log(Level.SEVERE, "Failed to create note for merge request " + _id, e);
             return null;
         }
+
     }
 
     private void build(Map<String, String> customParameters) {
