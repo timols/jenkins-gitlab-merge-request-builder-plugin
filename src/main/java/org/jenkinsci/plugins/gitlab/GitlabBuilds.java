@@ -1,6 +1,8 @@
 package org.jenkinsci.plugins.gitlab;
 
 import java.io.IOException;
+import java.lang.InterruptedException;
+import java.util.concurrent.ExecutionException;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,7 +32,19 @@ public class GitlabBuilds {
         if (build == null) {
             _logger.log(Level.SEVERE, "Job failed to start.");
         }
-        return withCustomParameters(new StringBuilder("Build triggered."), customParameters).toString();
+
+        // Wait for Jenkins to assign a build-number
+        try {
+            build.get();
+        } catch(InterruptedException|ExecutionException e){
+            _logger.log(Level.SEVERE, "Job has not beet triggered.", e);
+        }
+
+        StringBuilder stringBuilder = new StringBuilder();
+        String buildUrl = Jenkins.getInstance().getRootUrl() + _trigger.getLastBuildUrl();
+        stringBuilder.append("Build triggered. Running at: ")
+            .append("[").append(buildUrl).append("](").append(buildUrl).append(")"); // Link in markdown format
+        return withCustomParameters(stringBuilder, customParameters).toString();
     }
 
 
@@ -74,6 +88,13 @@ public class GitlabBuilds {
         } catch (IOException e) {
             _logger.log(Level.SEVERE, "Can't update build description", e);
         }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Build Started: ");
+        String url = Jenkins.getInstance().getRootUrl() + build.getUrl();
+        sb.append("[").append(url).append("](").append(url).append(")");
+        _repository.createNote(cause.getMergeRequestId(), sb.toString(), false, false);
+
     }
 
     public void onCompleted(AbstractBuild build) {

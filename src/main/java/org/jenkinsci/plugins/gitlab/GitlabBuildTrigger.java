@@ -177,6 +177,10 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
         return _autoMergePassed;
     }
 
+    public String getLastBuildUrl(){
+        return this.job.getLastBuild().getUrl();
+    }
+
     @Extension
     public static final GitlabBuildTriggerDescriptor DESCRIPTOR = new GitlabBuildTriggerDescriptor();
 
