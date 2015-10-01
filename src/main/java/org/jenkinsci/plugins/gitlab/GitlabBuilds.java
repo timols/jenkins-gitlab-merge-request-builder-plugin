@@ -88,6 +88,13 @@ public class GitlabBuilds {
         } catch (IOException e) {
             _logger.log(Level.SEVERE, "Can't update build description", e);
         }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Build Started: ");
+        String url = Jenkins.getInstance().getRootUrl() + build.getUrl();
+        sb.append("[").append(url).append("](").append(url).append(")");
+        _repository.createNote(cause.getMergeRequestId(), sb.toString(), false, false);
+
     }
 
     public void onCompleted(AbstractBuild build) {
