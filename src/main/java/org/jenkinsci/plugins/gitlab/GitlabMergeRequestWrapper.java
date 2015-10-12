@@ -24,6 +24,7 @@ public class GitlabMergeRequestWrapper {
     private final Integer _id;
     private Integer _iid;
     private final String _author;
+    private String _description;
     private GitlabProject _sourceProject;
     private String _sourceBranch;
     private String _targetBranch;
@@ -40,6 +41,7 @@ public class GitlabMergeRequestWrapper {
         _id = mergeRequest.getId();
         _iid = mergeRequest.getIid();
         _author = mergeRequest.getAuthor().getUsername();
+        _description = mergeRequest.getDescription();
         _sourceBranch = mergeRequest.getSourceBranch();
         
         try {
@@ -74,6 +76,10 @@ public class GitlabMergeRequestWrapper {
 
         if (_sourceBranch == null) {
             _sourceBranch = gitlabMergeRequest.getSourceBranch();
+        }
+
+        if (_description == null) {
+            _description = gitlabMergeRequest.getDescription();
         }
 
         if (_sourceProject == null) {
@@ -292,7 +298,11 @@ public class GitlabMergeRequestWrapper {
     public String getAuthor() {
         return _author;
     }
-    
+
+    public String getDescription() {
+        return _description;
+    }
+
     public String getSourceName() {
         return _sourceProject.getPathWithNamespace();
     }

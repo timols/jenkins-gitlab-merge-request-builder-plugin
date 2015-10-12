@@ -12,9 +12,11 @@ public class GitlabCause extends Cause {
     private final String _sourceBranch;
     private final String _targetBranch;
 	private final Map<String, String> _customParameters;
+    private final String _description;
 
     public GitlabCause(Integer mergeRequestId, Integer mergeRequestIid, String sourceName,
-            String sourceRepository, String sourceBranch, String targetBranch, Map<String, String> customParameters) {
+            String sourceRepository, String sourceBranch, String targetBranch, Map<String, String> customParameters,
+            String description) {
         _mergeRequestId = mergeRequestId;
         _mergeRequestIid = mergeRequestIid;
         _sourceName = sourceName;
@@ -22,6 +24,7 @@ public class GitlabCause extends Cause {
         _sourceBranch = sourceBranch;
         _targetBranch = targetBranch;
 		_customParameters = customParameters;
+        _description = description;
     }
 
 
@@ -58,4 +61,9 @@ public class GitlabCause extends Cause {
     public Map<String, String> getCustomParameters() {
 		return _customParameters;
 	}
+
+    public String getDescription() {
+        return _description;
+    }
+
 }
