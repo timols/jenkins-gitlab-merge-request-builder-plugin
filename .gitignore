@@ -11,3 +11,5 @@ work/*
 .settings
 /bin/
 .gradle
+build/
+classes/

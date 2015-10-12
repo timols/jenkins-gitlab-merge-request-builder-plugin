@@ -6,19 +6,20 @@ import org.gitlab.api.GitlabAPI;
  * GitlabAPI Wrapper Class
  */
 public class Gitlab {
-    private GitlabAPI _api;
+
+    private GitlabAPI api;
 
     private void connect() {
         String privateToken = GitlabBuildTrigger.getDesc().getBotApiTokenSecret().getPlainText();
         String apiUrl = GitlabBuildTrigger.getDesc().getGitlabHostUrl();
-        _api = GitlabAPI.connect(apiUrl, privateToken);
+        api = GitlabAPI.connect(apiUrl, privateToken);
     }
 
     public GitlabAPI get() {
-        if (_api == null) {
+        if (api == null) {
             connect();
         }
 
-        return _api;
+        return api;
     }
 }

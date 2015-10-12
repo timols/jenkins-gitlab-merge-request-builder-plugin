@@ -1,5 +1,18 @@
 package org.jenkinsci.plugins.gitlab;
 
+import antlr.ANTLRException;
+import hudson.Extension;
+import hudson.model.*;
+import hudson.model.queue.QueueTaskFuture;
+import hudson.triggers.Trigger;
+import hudson.triggers.TriggerDescriptor;
+import hudson.util.FormValidation;
+import hudson.util.Secret;
+import net.sf.json.JSONObject;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -7,62 +20,49 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-
-import antlr.ANTLRException;
-import hudson.Extension;
-import hudson.model.AbstractProject;
-import hudson.model.Item;
-import hudson.model.ParameterDefinition;
-import hudson.model.ParameterValue;
-import hudson.model.ParametersAction;
-import hudson.model.ParametersDefinitionProperty;
-import hudson.model.StringParameterValue;
-import hudson.model.queue.QueueTaskFuture;
-import hudson.triggers.Trigger;
-import hudson.triggers.TriggerDescriptor;
-import hudson.util.FormValidation;
-import hudson.util.Secret;
-import net.sf.json.JSONObject;
-
 public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
-    private static final Logger _logger = Logger.getLogger(GitlabBuildTrigger.class.getName());
 
-    private final String _cron;
-    private final String _projectPath;
-    private final String _targetBranchRegex;
-    private final boolean _useHttpUrl;
-    private final String _assigneeFilter;
-    private final String _triggerComment;
-    private final boolean _autoCloseFailed;
-    private final boolean _autoMergePassed;
-    transient private GitlabMergeRequestBuilder _gitlabMergeRequestBuilder;
+    private static final Logger LOGGER = Logger.getLogger(GitlabBuildTrigger.class.getName());
+
+    private final String projectPath;
+    private final String targetBranchRegex;
+    private final boolean useHttpUrl;
+    private final String assigneeFilter;
+    private final String triggerComment;
+    private final boolean autoCloseFailed;
+    private final boolean autoMergePassed;
+    transient private GitlabMergeRequestBuilder builder;
 
     @DataBoundConstructor
-    public GitlabBuildTrigger(String cron, String projectPath, String targetBranchRegex, boolean useHttpUrl, String assigneeFilter, String triggerComment, boolean autoCloseFailed, boolean autoMergePassed) throws ANTLRException {
+    public GitlabBuildTrigger(String cron,
+                              String projectPath,
+                              String targetBranchRegex,
+                              boolean useHttpUrl,
+                              String assigneeFilter,
+                              String triggerComment,
+                              boolean autoCloseFailed,
+                              boolean autoMergePassed) throws ANTLRException {
+
         super(cron);
-        _cron = cron;
-        _projectPath = projectPath;
-        _targetBranchRegex = targetBranchRegex;
-        _useHttpUrl = useHttpUrl;
-        _assigneeFilter = assigneeFilter;
-        _triggerComment = triggerComment;
-        _autoCloseFailed = autoCloseFailed;
-        _autoMergePassed = autoMergePassed;
+        this.projectPath = projectPath;
+        this.targetBranchRegex = targetBranchRegex;
+        this.useHttpUrl = useHttpUrl;
+        this.assigneeFilter = assigneeFilter;
+        this.triggerComment = triggerComment;
+        this.autoCloseFailed = autoCloseFailed;
+        this.autoMergePassed = autoMergePassed;
     }
 
     @Override
     public void start(AbstractProject<?, ?> project, boolean newInstance) {
         try {
-            _gitlabMergeRequestBuilder = GitlabMergeRequestBuilder.getBuilder()
-                                            .setProject(project)
-                                            .setTrigger(this)
-                                            .setMergeRequests(DESCRIPTOR.getMergeRequests(project.getFullName()))
-                                            .build();
+            builder = GitlabMergeRequestBuilder.getBuilder()
+                    .setProject(project)
+                    .setTrigger(this)
+                    .setMergeRequests(DESCRIPTOR.getMergeRequests(project.getFullName()))
+                    .build();
         } catch (IllegalStateException ex) {
-            _logger.log(Level.SEVERE, "Can't start trigger", ex);
+            LOGGER.log(Level.SEVERE, "Can't start trigger", ex);
             return;
         }
 
@@ -79,17 +79,17 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
         values.put("gitlabSourceBranch", new StringParameterValue("gitlabSourceBranch", cause.getSourceBranch()));
         values.put("gitlabTargetBranch", new StringParameterValue("gitlabTargetBranch", cause.getTargetBranch()));
         values.put("gitlabDescription", new StringParameterValue("gitlabDescription", cause.getDescription()));
-        for(Map.Entry<String, String> entry: cause.getCustomParameters().entrySet()) {
-        	values.put(entry.getKey(), new StringParameterValue(entry.getKey(), entry.getValue()));
+        for (Map.Entry<String, String> entry : cause.getCustomParameters().entrySet()) {
+            values.put(entry.getKey(), new StringParameterValue(entry.getKey(), entry.getValue()));
         }
 
-        List<ParameterValue> listValues = new ArrayList<ParameterValue>(values.values());
-        return this.job.scheduleBuild2(0, cause, new ParametersAction(listValues));
+        List<ParameterValue> listValues = new ArrayList<>(values.values());
+        return job.scheduleBuild2(0, cause, new ParametersAction(listValues));
     }
 
     private Map<String, ParameterValue> getDefaultParameters() {
-        Map<String, ParameterValue> values = new HashMap<String, ParameterValue>();
-        ParametersDefinitionProperty definitionProperty = this.job.getProperty(ParametersDefinitionProperty.class);
+        Map<String, ParameterValue> values = new HashMap<>();
+        ParametersDefinitionProperty definitionProperty = job.getProperty(ParametersDefinitionProperty.class);
 
         if (definitionProperty != null) {
             for (ParameterDefinition definition : definitionProperty.getParameterDefinitions()) {
@@ -101,7 +101,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
     }
 
     public GitlabMergeRequestBuilder getBuilder() {
-        return _gitlabMergeRequestBuilder;
+        return builder;
     }
 
     @Override
@@ -111,9 +111,9 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
         }
 
 
-        if (_gitlabMergeRequestBuilder != null) {
-            _gitlabMergeRequestBuilder.stop();
-            _gitlabMergeRequestBuilder = null;
+        if (builder != null) {
+            builder.stop();
+            builder = null;
         }
 
         super.stop();
@@ -125,8 +125,8 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
             return;
         }
 
-        if (_gitlabMergeRequestBuilder != null) {
-            _gitlabMergeRequestBuilder.run();
+        if (builder != null) {
+            builder.run();
         }
         DESCRIPTOR.save();
     }
@@ -151,60 +151,61 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
     }
 
     public String getProjectPath() {
-        return _projectPath;
+        return projectPath;
     }
 
     public String getTargetBranchRegex() {
-        return _targetBranchRegex;
+        return targetBranchRegex;
     }
 
     public boolean getUseHttpUrl() {
-        return _useHttpUrl;
+        return useHttpUrl;
     }
-    
+
     public String getAssigneeFilter() {
-        return _assigneeFilter;
+        return assigneeFilter;
     }
-    
+
     public String getTriggerComment() {
-        return _triggerComment;
+        return triggerComment;
     }
 
-    public boolean getAutoCloseFailed(){
-        return _autoCloseFailed;
+    public boolean getAutoCloseFailed() {
+        return autoCloseFailed;
     }
 
-    public boolean getAutoMergePassed(){
-        return _autoMergePassed;
+    public boolean getAutoMergePassed() {
+        return autoMergePassed;
     }
 
     @Extension
     public static final GitlabBuildTriggerDescriptor DESCRIPTOR = new GitlabBuildTriggerDescriptor();
 
     public static final class GitlabBuildTriggerDescriptor extends TriggerDescriptor {
-        private String _botUsername = "jenkins";
-        private String _gitlabHostUrl;
-        private String _assigneeFilter = "jenkins";
-        @Deprecated private String _botApiToken;
-        private Secret _botApiTokenSecret;
-        private String _cron = "H/5 * * * *";
-        private boolean _enableBuildTriggeredMessage = true;
-        private String _successMessage = "Build finished.  Tests PASSED.";
-        private String _unstableMessage = "Build finished.  Tests FAILED.";
-        private String _failureMessage = "Build finished.  Tests FAILED.";
-        private boolean _ignoreCertificateErrors = false;
+        private String botUsername = "jenkins";
+        private String gitlabHostUrl;
+        private String assigneeFilter = "jenkins";
+        @Deprecated
+        private String botApiToken;
+        private Secret botApiTokenSecret;
+        private String cron = "H/5 * * * *";
+        private boolean enableBuildTriggeredMessage = true;
+        private String successMessage = "Build finished.  Tests PASSED.";
+        private String unstableMessage = "Build finished.  Tests FAILED.";
+        private String failureMessage = "Build finished.  Tests FAILED.";
+        private boolean ignoreCertificateErrors = false;
 
-        private transient Gitlab _gitlab;
-        private Map<String, Map<Integer, GitlabMergeRequestWrapper>> _jobs;
+        private transient Gitlab gitlab;
+        private Map<String, Map<Integer, GitlabMergeRequestWrapper>> jobs;
 
         public GitlabBuildTriggerDescriptor() {
             load();
-            if (_jobs == null) {
-                _jobs = new HashMap<String, Map<Integer, GitlabMergeRequestWrapper>>();
+            if (jobs == null) {
+                jobs = new HashMap<>();
             }
-            if (_botApiTokenSecret == null) {
-                _botApiTokenSecret = Secret.fromString(_botApiToken);
-                _botApiToken = null;
+            if (botApiTokenSecret == null) {
+                botApiTokenSecret = Secret.fromString(botApiToken);
+                botApiToken = null;
             }
         }
 
@@ -220,21 +221,21 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
 
         @Override
         public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
-            _botUsername = formData.getString("botUsername");
-            _botApiTokenSecret = Secret.fromString(formData.getString("botApiTokenSecret"));
-            _gitlabHostUrl = formData.getString("gitlabHostUrl");
-            _cron = formData.getString("cron");
-            _assigneeFilter = formData.getString("assigneeFilter");
-            _enableBuildTriggeredMessage = formData.getBoolean("enableBuildTriggeredMessage");
-            _successMessage = formData.getString("successMessage");
-            _unstableMessage = formData.getString("unstableMessage");
-            _failureMessage = formData.getString("failureMessage");
-            _ignoreCertificateErrors = formData.getBoolean("ignoreCertificateErrors");
+            botUsername = formData.getString("botUsername");
+            botApiTokenSecret = Secret.fromString(formData.getString("botApiTokenSecret"));
+            gitlabHostUrl = formData.getString("gitlabHostUrl");
+            cron = formData.getString("cron");
+            assigneeFilter = formData.getString("assigneeFilter");
+            enableBuildTriggeredMessage = formData.getBoolean("enableBuildTriggeredMessage");
+            successMessage = formData.getString("successMessage");
+            unstableMessage = formData.getString("unstableMessage");
+            failureMessage = formData.getString("failureMessage");
+            ignoreCertificateErrors = formData.getBoolean("ignoreCertificateErrors");
 
             save();
 
-            _gitlab = new Gitlab();
-            _gitlab.get().ignoreCertificateErrors(_ignoreCertificateErrors);
+            gitlab = new Gitlab();
+            gitlab.get().ignoreCertificateErrors(ignoreCertificateErrors);
 
             return super.configure(req, formData);
         }
@@ -264,58 +265,58 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
         }
 
         public String getCron() {
-            return _cron;
+            return cron;
         }
-        
+
         public String getAssigneeFilter() {
-            return _assigneeFilter;
+            return assigneeFilter;
         }
 
         public boolean isEnableBuildTriggeredMessage() {
-        	return _enableBuildTriggeredMessage;
+            return enableBuildTriggeredMessage;
         }
 
         public String getSuccessMessage() {
-            if (_successMessage == null) {
-                _successMessage = "Build finished.  Tests PASSED.";
+            if (successMessage == null) {
+                successMessage = "Build finished.  Tests PASSED.";
             }
-            return _successMessage;
+            return successMessage;
         }
 
         public String getUnstableMessage() {
-            if (_unstableMessage == null) {
-                _unstableMessage = "Build finished.  Tests FAILED.";
+            if (unstableMessage == null) {
+                unstableMessage = "Build finished.  Tests FAILED.";
             }
-            return _unstableMessage;
+            return unstableMessage;
         }
 
         public String getFailureMessage() {
-            if (_failureMessage == null) {
-                _failureMessage = "Build finished.  Tests FAILED.";
+            if (failureMessage == null) {
+                failureMessage = "Build finished.  Tests FAILED.";
             }
-            return _failureMessage;
+            return failureMessage;
         }
 
         public Gitlab getGitlab() {
-            if (_gitlab == null) {
-                _gitlab = new Gitlab();
-                _gitlab.get().ignoreCertificateErrors(_ignoreCertificateErrors);
+            if (gitlab == null) {
+                gitlab = new Gitlab();
+                gitlab.get().ignoreCertificateErrors(ignoreCertificateErrors);
             }
-            return _gitlab;
+            return gitlab;
         }
 
         public boolean isIgnoreCertificateErrors() {
-            return _ignoreCertificateErrors;
+            return ignoreCertificateErrors;
         }
 
         public Map<Integer, GitlabMergeRequestWrapper> getMergeRequests(String projectName) {
             Map<Integer, GitlabMergeRequestWrapper> result;
 
-            if (_jobs.containsKey(projectName)) {
-                result = _jobs.get(projectName);
+            if (jobs.containsKey(projectName)) {
+                result = jobs.get(projectName);
             } else {
                 result = new HashMap<Integer, GitlabMergeRequestWrapper>();
-                _jobs.put(projectName, result);
+                jobs.put(projectName, result);
             }
 
             return result;
@@ -326,19 +327,19 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
          */
         @Deprecated
         public String getBotApiToken() {
-            return _botApiTokenSecret.getPlainText();
+            return botApiTokenSecret.getPlainText();
         }
 
         public Secret getBotApiTokenSecret() {
-            return _botApiTokenSecret;
+            return botApiTokenSecret;
         }
 
         public String getGitlabHostUrl() {
-            return _gitlabHostUrl;
+            return gitlabHostUrl;
         }
 
         public String getBotUsername() {
-            return _botUsername;
+            return botUsername;
         }
 
     }

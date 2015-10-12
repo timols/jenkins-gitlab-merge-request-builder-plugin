@@ -1,5 +1,9 @@
 package org.jenkinsci.plugins.gitlab;
 
+import org.gitlab.api.models.GitlabMergeRequest;
+import org.gitlab.api.models.GitlabNote;
+import org.gitlab.api.models.GitlabProject;
+
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
@@ -7,43 +11,40 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.gitlab.api.models.GitlabMergeRequest;
-import org.gitlab.api.models.GitlabNote;
-import org.gitlab.api.models.GitlabProject;
 
 public class GitlabRepository {
 
-    private static final Logger _logger = Logger.getLogger(GitlabRepository.class.getName());
-    private String _projectPath;
+    private static final Logger LOGGER = Logger.getLogger(GitlabRepository.class.getName());
+    private String projectPath;
 
-    private Map<Integer, GitlabMergeRequestWrapper> _mergeRequests;
-    private GitlabProject _project;
-    private GitlabMergeRequestBuilder _builder;
+    private Map<Integer, GitlabMergeRequestWrapper> mergeRequests;
+    private GitlabProject project;
+    private GitlabMergeRequestBuilder builder;
 
     public GitlabRepository(String projectPath, GitlabMergeRequestBuilder builder, Map<Integer, GitlabMergeRequestWrapper> mergeRequests) {
-        _projectPath = projectPath;
-        _builder = builder;
-        _mergeRequests = mergeRequests;
+        this.projectPath = projectPath;
+        this.builder = builder;
+        this.mergeRequests = mergeRequests;
     }
 
     public void init() {
         checkState();
 
-        for (GitlabMergeRequestWrapper mergeRequestWrapper : _mergeRequests.values()) {
-            mergeRequestWrapper.init(_builder, _project);
+        for (GitlabMergeRequestWrapper mergeRequestWrapper : mergeRequests.values()) {
+            mergeRequestWrapper.init(builder, project);
         }
     }
 
     private boolean checkState() {
-        if (_project == null) {
-            _project = getProjectForPath(_projectPath);
+        if (project == null) {
+            project = getProjectForPath(projectPath);
         }
 
-        if (_project == null) {
-            _logger.log(Level.SEVERE, "No project with path: " + _projectPath + " found");
+        if (project == null) {
+            LOGGER.log(Level.SEVERE, "No project with path: " + projectPath + " found");
         }
 
-        return _project != null;
+        return project != null;
     }
 
     public void check() {
@@ -53,31 +54,31 @@ public class GitlabRepository {
 
         List<GitlabMergeRequest> mergeRequests;
         try {
-            mergeRequests = _builder.getGitlab().get().getOpenMergeRequests(_project);
+            mergeRequests = builder.getGitlab().get().getOpenMergeRequests(project);
         } catch (IOException e) {
-            _logger.log(Level.SEVERE, "Could not retrieve merge requests.", e);
+            LOGGER.log(Level.SEVERE, "Could not retrieve merge requests.", e);
             return;
         }
 
-        Set<Integer> closedMergedRequests = new HashSet<Integer>(_mergeRequests.keySet());
+        Set<Integer> closedMergedRequests = new HashSet<Integer>(this.mergeRequests.keySet());
 
         for (GitlabMergeRequest mergeRequest : mergeRequests) {
             check(mergeRequest);
             closedMergedRequests.remove(mergeRequest.getId());
         }
 
-        removeClosed(closedMergedRequests, _mergeRequests);
+        removeClosed(closedMergedRequests, this.mergeRequests);
     }
 
     private void check(GitlabMergeRequest gitlabMergeRequest) {
         Integer id = gitlabMergeRequest.getId();
         GitlabMergeRequestWrapper mergeRequest;
 
-        if (_mergeRequests.containsKey(id)) {
-            mergeRequest = _mergeRequests.get(id);
+        if (mergeRequests.containsKey(id)) {
+            mergeRequest = mergeRequests.get(id);
         } else {
-            mergeRequest = new GitlabMergeRequestWrapper(gitlabMergeRequest, _builder, _project);
-            _mergeRequests.put(id, mergeRequest);
+            mergeRequest = new GitlabMergeRequestWrapper(gitlabMergeRequest, builder, project);
+            mergeRequests.put(id, mergeRequest);
         }
 
         mergeRequest.check(gitlabMergeRequest);
@@ -95,21 +96,21 @@ public class GitlabRepository {
 
     private GitlabProject getProjectForPath(String path) {
         try {
-            List<GitlabProject> projects = _builder.getGitlab().get().getProjects();
+            List<GitlabProject> projects = builder.getGitlab().get().getProjects();
             for (GitlabProject project : projects) {
                 if (project.getPathWithNamespace().equals(path)) {
                     return project;
                 }
             }
         } catch (IOException e) {
-            _logger.log(Level.SEVERE, "Could not retrieve Project with path: " + path + " (Have you properly configured the project path?)");
+            LOGGER.log(Level.SEVERE, "Could not retrieve Project with path: " + path + " (Have you properly configured the project path?)");
         }
         return null;
     }
 
     public String getProjectUrl() {
         try {
-            return _builder.getGitlab().get().getUrl(_project.getPathWithNamespace()).toString();
+            return builder.getGitlab().get().getUrl(project.getPathWithNamespace()).toString();
         } catch (IOException e) {
             return null;
         }
@@ -120,7 +121,7 @@ public class GitlabRepository {
     }
 
     public GitlabNote createNote(Integer mergeRequestId, String message, boolean shouldClose, boolean shouldMerge) {
-        GitlabMergeRequestWrapper gitlabMergeRequestWrapper = _mergeRequests.get(mergeRequestId);
+        GitlabMergeRequestWrapper gitlabMergeRequestWrapper = mergeRequests.get(mergeRequestId);
         return gitlabMergeRequestWrapper.createNote(message, shouldClose, shouldMerge);
     }
 }
