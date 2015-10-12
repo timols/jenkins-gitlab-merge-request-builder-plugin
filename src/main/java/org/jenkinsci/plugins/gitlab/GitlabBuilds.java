@@ -137,6 +137,6 @@ public class GitlabBuilds {
     }
 
     private String getOnStartedMessage(GitlabCause cause) {
-        return "Merge Request #" + cause.getMergeRequestIid() + " (" + cause.getSourceBranch() + " => " + cause.getTargetBranch() + ")";
+        return cause.getShortDescription();
     }
 }
