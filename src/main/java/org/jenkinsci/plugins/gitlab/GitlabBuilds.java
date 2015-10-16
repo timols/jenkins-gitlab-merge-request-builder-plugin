@@ -83,6 +83,10 @@ public class GitlabBuilds {
         sb.append("[").append(url).append("](").append(url).append(")");
         repository.createNote(cause.getMergeRequestId(), sb.toString(), false, false);
 
+        if (trigger.getDescriptor().isUpdateCommitStatus()) {
+            repository.createCommitStatus(cause.getMergeRequestId(), "running", url);
+        }
+
     }
 
     public void onCompleted(AbstractBuild build) {
@@ -134,6 +138,10 @@ public class GitlabBuilds {
         }
 
         repository.createNote(cause.getMergeRequestId(), stringBuilder.toString(), shouldClose, shouldMerge);
+
+        if (trigger.getDescriptor().isUpdateCommitStatus()) {
+            repository.createCommitStatus(cause.getMergeRequestId(), (build.getResult() == Result.SUCCESS) ? "success" : "failure", buildUrl);
+        }
     }
 
     private String getOnStartedMessage(GitlabCause cause) {

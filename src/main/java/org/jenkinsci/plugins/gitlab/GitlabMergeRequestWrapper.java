@@ -3,6 +3,7 @@ package org.jenkinsci.plugins.gitlab;
 import org.apache.commons.lang.StringUtils;
 import org.gitlab.api.GitlabAPI;
 import org.gitlab.api.models.GitlabCommit;
+import org.gitlab.api.models.GitlabCommitStatus;
 import org.gitlab.api.models.GitlabMergeRequest;
 import org.gitlab.api.models.GitlabNote;
 import org.gitlab.api.models.GitlabProject;
@@ -347,6 +348,22 @@ public class GitlabMergeRequestWrapper {
             return null;
         }
 
+    }
+
+    public GitlabCommitStatus createCommitStatus(String status, String targetUrl) {
+        try {
+            GitlabAPI api = builder.getGitlab().get();
+            GitlabMergeRequest mergeRequest = api.getMergeRequest(project, id);
+            GitlabCommit latestCommit = getLatestCommit(mergeRequest, api);
+
+            if (latestCommit != null) {
+                return api.createCommitStatus(project, latestCommit.getId(), status, mergeRequest.getSourceBranch(), "Jenkins", targetUrl, null);
+            }
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Failed to set commit status for merge request " + id, e);
+        }
+
+        return null;
     }
 
     private void build(Map<String, String> customParameters) {

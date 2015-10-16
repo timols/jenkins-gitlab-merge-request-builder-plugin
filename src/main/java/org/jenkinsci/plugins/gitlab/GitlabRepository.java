@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.gitlab;
 
+import org.gitlab.api.models.GitlabCommitStatus;
 import org.gitlab.api.models.GitlabMergeRequest;
 import org.gitlab.api.models.GitlabNote;
 import org.gitlab.api.models.GitlabProject;
@@ -123,5 +124,10 @@ public class GitlabRepository {
     public GitlabNote createNote(Integer mergeRequestId, String message, boolean shouldClose, boolean shouldMerge) {
         GitlabMergeRequestWrapper gitlabMergeRequestWrapper = mergeRequests.get(mergeRequestId);
         return gitlabMergeRequestWrapper.createNote(message, shouldClose, shouldMerge);
+    }
+
+    public GitlabCommitStatus createCommitStatus(Integer mergeRequestId, String status, String targetUrl) {
+        GitlabMergeRequestWrapper gitlabMergeRequestWrapper = mergeRequests.get(mergeRequestId);
+        return gitlabMergeRequestWrapper.createCommitStatus(status, targetUrl);
     }
 }
