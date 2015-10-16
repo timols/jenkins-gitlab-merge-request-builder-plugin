@@ -23,7 +23,7 @@ version = '1.2.3-SNAPSHOT'
 description = 'A plugin to build merge requests in Gitlab'
 
 jenkinsPlugin {
-	coreVersion = '1.554'
+	coreVersion = '1.633'
 	displayName = 'Gitlab Merge Request Builder'
 	url = 'https://wiki.jenkins-ci.org/display/JENKINS/Gitlab+Merge+Request+Builder+Plugin'
 	gitHubUrl = 'https://github.com/timols/jenkins-gitlab-merge-request-builder-plugin'
