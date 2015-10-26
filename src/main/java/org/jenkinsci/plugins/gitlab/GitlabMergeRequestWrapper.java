@@ -165,7 +165,7 @@ public class GitlabMergeRequestWrapper {
         if (assigneeFilter.equals("")) {
             shouldRun = true;
         } else {
-            if (assignee.equals(assigneeFilter)) {
+            if (assigneeFilter.equals(assignee)) {
                 shouldRun = true;
             } else {
                 shouldRun = false;
