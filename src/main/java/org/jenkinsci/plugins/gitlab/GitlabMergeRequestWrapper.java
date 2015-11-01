@@ -102,32 +102,34 @@ public class GitlabMergeRequestWrapper {
             String assigneeFilter = builder.getTrigger().getAssigneeFilter();
             String assignee = getAssigneeUsername(gitlabMergeRequest);
             String triggerComment = builder.getTrigger().getTriggerComment();
-            if (lastJenkinsNote == null) {
+
+            if (lastNote != null && lastNote.getBody().equals(triggerComment)) {
+                LOGGER.info("Trigger comment found");
+                shouldRun = true;
+            } else if (lastJenkinsNote == null) {
                 LOGGER.info("Latest note from Jenkins is null");
                 shouldRun = latestCommitIsNotReached(latestCommit);
             } else if (latestCommit == null) {
-                LOGGER.log(Level.SEVERE, "Failed to determine the lastest commit for merge request {" + gitlabMergeRequest.getId() + "}. This might be caused by a stalled MR in gitlab.");
+                LOGGER.log(Level.SEVERE, "Failed to determine the latest commit for merge request {" + gitlabMergeRequest.getId() + "}. This might be caused by a stalled MR in gitlab.");
                 return;
             } else {
                 LOGGER.info("Latest note from Jenkins: " + lastJenkinsNote.getBody());
                 shouldRun = latestCommitIsNotReached(latestCommit);
                 LOGGER.info("Latest commit: " + latestCommit.getId());
-
-                if (lastNote.getBody().equals(triggerComment)) {
-                    shouldRun = true;
-                }
             }
             if (shouldRun) {
                 if (assigneeFilterMatch(assigneeFilter, assignee)) {
-                    LOGGER.info("Build is supposed to run");
                     mergeRequestStatus.setLatestCommitOfMergeRequest(id.toString(), latestCommit.getId());
                 } else {
                     shouldRun = false;
                 }
             }
             if (shouldRun) {
+                LOGGER.info("Build is supposed to run");
                 Map<String, String> customParameters = getSpecifiedCustomParameters(gitlabMergeRequest, api);
                 build(customParameters);
+            } else {
+                LOGGER.info("Build is not supposed to run");
             }
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Failed to fetch commits for Merge Request " + gitlabMergeRequest.getId());
