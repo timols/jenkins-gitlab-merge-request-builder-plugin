@@ -1,22 +1,18 @@
 package org.jenkinsci.plugins.gitlab;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.apache.commons.lang.StringUtils;
 import org.gitlab.api.GitlabAPI;
 import org.gitlab.api.models.GitlabCommit;
 import org.gitlab.api.models.GitlabMergeRequest;
 import org.gitlab.api.models.GitlabNote;
 import org.gitlab.api.models.GitlabProject;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class GitlabMergeRequestWrapper {
 
@@ -35,6 +31,7 @@ public class GitlabMergeRequestWrapper {
 
     transient private GitlabProject project;
     transient private GitlabMergeRequestBuilder builder;
+
 
     GitlabMergeRequestWrapper(GitlabMergeRequest mergeRequest, GitlabMergeRequestBuilder builder, GitlabProject project) {
         this.id = mergeRequest.getId();
@@ -94,8 +91,7 @@ public class GitlabMergeRequestWrapper {
             LOGGER.log(Level.INFO, "The target regex matches the target branch {" + targetBranch + "}. Source branch {" + sourceBranch + "}");
             shouldRun = true;
         } else {
-            LOGGER.log(Level.INFO, "The target regex did not match the target branch {" + targetBranch + "}. Not triggering this job. Source branch {"
-                    + sourceBranch + "}");
+            LOGGER.log(Level.INFO, "The target regex did not match the target branch {" + targetBranch + "}. Not triggering this job. Source branch {" + sourceBranch + "}");
             return;
         }
         try {
@@ -114,8 +110,7 @@ public class GitlabMergeRequestWrapper {
                 LOGGER.info("Latest note from Jenkins is null");
                 shouldRun = latestCommitIsNotReached(latestCommit);
             } else if (latestCommit == null) {
-                LOGGER.log(Level.SEVERE, "Failed to determine the latest commit for merge request {" + gitlabMergeRequest.getId()
-                        + "}. This might be caused by a stalled MR in gitlab.");
+                LOGGER.log(Level.SEVERE, "Failed to determine the latest commit for merge request {" + gitlabMergeRequest.getId() + "}. This might be caused by a stalled MR in gitlab.");
                 return;
             } else {
                 LOGGER.info("Latest note from Jenkins: " + lastJenkinsNote.getBody());
@@ -142,11 +137,12 @@ public class GitlabMergeRequestWrapper {
     }
 
     /**
-     * Check whether the branchName can be matched using the target branch regex. Empty regex patterns will cause this
-     * method to return true.
+     * Check whether the branchName can be matched using the target branch
+     * regex. Empty regex patterns will cause this method to return true.
      *
      * @param branchName
-     * @return true when the name can be matched or when the regex is empty. Otherwise false.
+     * @return true when the name can be matched or when the regex is empty.
+     * Otherwise false.
      */
     public boolean isAllowedByTargetBranchRegex(String branchName) {
         String regex = builder.getTrigger().getTargetBranchRegex();
@@ -208,7 +204,6 @@ public class GitlabMergeRequestWrapper {
         List<GitlabNote> notes = api.getAllNotes(gitlabMergeRequest);
 
         Collections.sort(notes, new Comparator<GitlabNote>() {
-            @Override
             public int compare(GitlabNote o1, GitlabNote o2) {
                 return o1.getCreatedAt().compareTo(o2.getCreatedAt());
             }
@@ -218,12 +213,10 @@ public class GitlabMergeRequestWrapper {
 
     private Map<String, String> getSpecifiedCustomParameters(GitlabMergeRequest gitlabMergeRequest, GitlabAPI api) throws IOException {
         String botUsername = GitlabBuildTrigger.getDesc().getBotUsername();
-        // Mention the botUserName in the text using @[botUserName] to indicate a command to the bot. If that is
-        // followed by a semicolon and one of the two commands:
-        // USE-PARAMETER for specifying a parameter using the format Key=Value
+        // Mention the botUserName in the text using @[botUserName] to indicate a command to the bot. If that is followed by a semicolon and one of the two commands:
+        //  USE-PARAMETER for specifying a parameter using the format Key=Value
         // or REMOVE-PARAMETER for removing a parameter with the given Key
-        Pattern searchPattern = Pattern.compile("@" + botUsername + "\\s*:\\s*(USE|REMOVE)-PARAMETER\\s*:\\s*(\\w+)\\s*(?:=\\s*(.*))?",
-                Pattern.CASE_INSENSITIVE);
+        Pattern searchPattern = Pattern.compile("@" + botUsername + "\\s*:\\s*(USE|REMOVE)-PARAMETER\\s*:\\s*(\\w+)\\s*(?:=\\s*(.*))?", Pattern.CASE_INSENSITIVE);
 
         Map<String, String> customParams = new HashMap<>();
         for (GitlabNote note : getNotes(gitlabMergeRequest, api)) {
@@ -253,7 +246,10 @@ public class GitlabMergeRequestWrapper {
             for (GitlabNote note : notes) {
                 if (note.getAuthor() != null) {
                     String noteAuthorNormalized = this.normalizeUsername(note.getAuthor().getUsername());
-                    LOGGER.finest("Traversing notes. Author: " + note.getAuthor().getUsername() + "; " + "normalized: " + noteAuthorNormalized);
+                    LOGGER.finest(
+                            "Traversing notes. Author: " + note.getAuthor().getUsername() + "; " +
+                                    "normalized: " + noteAuthorNormalized
+                    );
 
                     if (noteAuthorNormalized.equals(botUsernameNormalized)) {
                         lastJenkinsNote = note;
@@ -272,7 +268,6 @@ public class GitlabMergeRequestWrapper {
     private GitlabCommit getLatestCommit(GitlabMergeRequest gitlabMergeRequest, GitlabAPI api) throws IOException {
         List<GitlabCommit> commits = api.getCommits(gitlabMergeRequest);
         Collections.sort(commits, new Comparator<GitlabCommit>() {
-            @Override
             public int compare(GitlabCommit o1, GitlabCommit o2) {
                 return o2.getCreatedAt().compareTo(o1.getCreatedAt());
             }
