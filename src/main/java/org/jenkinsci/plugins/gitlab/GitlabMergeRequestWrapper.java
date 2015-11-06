@@ -331,10 +331,10 @@ public class GitlabMergeRequestWrapper {
             if (shouldClose || shouldMerge) {
                 String tailUrl = "";
                 if (shouldClose) {
-                    tailUrl = GitlabProject.URL + "/" + project.getId() + "/mergerequest/" + id + "?stateevent=close";
+                    tailUrl = GitlabProject.URL + "/" + project.getId() + "/merge_request/" + id + "?state_event=close";
                 }
                 if (shouldMerge) {
-                    tailUrl = GitlabProject.URL + "/" + project.getId() + "/mergerequest/" + id + "/merge";
+                    tailUrl = GitlabProject.URL + "/" + project.getId() + "/merge_request/" + id + "/merge";
                 }
                 builder.getGitlab().get().retrieve().method("PUT").to(tailUrl, Void.class);
             }
