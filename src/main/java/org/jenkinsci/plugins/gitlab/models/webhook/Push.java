@@ -6,7 +6,7 @@ package org.jenkinsci.plugins.gitlab.models.webhook;
 public class Push {
     public Integer project_id;
     public String ref;
-    public Repository repository;
+    public PushRepository repository;
 
     @Override
     public String toString() {

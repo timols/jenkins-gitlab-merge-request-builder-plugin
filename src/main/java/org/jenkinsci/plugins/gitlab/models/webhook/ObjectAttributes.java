@@ -8,10 +8,10 @@ public class ObjectAttributes {
     public Integer iid;
     public String target_branch;
     public Integer target_project_id;
-    public Repository target;
+    public MergeRequestRepository target;
     public String source_branch;
     public Integer source_project_id;
-    public Repository source;
+    public MergeRequestRepository source;
 
     @Override
     public String toString() {
