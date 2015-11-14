@@ -8,12 +8,11 @@ import hudson.model.queue.QueueTaskFuture;
 import hudson.util.IOUtils;
 import org.jenkinsci.plugins.gitlab.models.webhook.MergeRequest;
 import org.jenkinsci.plugins.gitlab.models.webhook.OnlyType;
-import org.jenkinsci.plugins.gitlab.models.webhook.Push;
 import org.kohsuke.stapler.*;
 
 import javax.servlet.ServletException;
-import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.logging.Logger;
 
 /**
@@ -53,34 +52,30 @@ public class GitlabWebhooks implements UnprotectedRootAction {
 
                 LOGGER.fine(mergeRequest.toString());
 
-                if ("open".equals(mergeRequest.object_attributes.action) || "reopen".equals(mergeRequest.object_attributes.action)) {
-//                    GitlabCause cause = new GitlabCause(
-//                            mergeRequest.object_attributes.id,
-//                            mergeRequest.object_attributes.iid,
-//                            mergeRequest.object_attributes.source.name,
-//                            mergeRequest.object_attributes.source.http_url,
-//                            mergeRequest.object_attributes.source_branch,
-//                            mergeRequest.object_attributes.target_branch,
-//                            null,
-//                            "");
-//
-//                    if (trigger != null) {
-//                        QueueTaskFuture<?> build = trigger.startJob(cause);
-//                    } else {
-//                        LOGGER.severe("TRIGGER is not set.");
-//                    }
-                }
-            } else if (ot.object_kind.equals("push")) {
-                Push p = g.fromJson(theString, Push.class);
+                if ("open".equals(mergeRequest.object_attributes.action) || "update".equals(mergeRequest.object_attributes.action)) {
 
-                LOGGER.fine(p.toString());
+
+                    if (trigger != null) {
+                        GitlabCause cause = new GitlabCause(
+                                mergeRequest.object_attributes.id,
+                                mergeRequest.object_attributes.iid,
+                                mergeRequest.object_attributes.source.name,
+                                mergeRequest.object_attributes.source.http_url,
+                                mergeRequest.object_attributes.source_branch,
+                                mergeRequest.object_attributes.target_branch,
+                                new HashMap<String, String>(),
+                                "");
+
+                        QueueTaskFuture<?> build = trigger.startJob(cause);
+                    } else {
+                        LOGGER.severe("TRIGGER is not set.");
+                    }
+                }
             }
 
         } catch (Exception ex) {
             LOGGER.severe("There was an error");
-            LOGGER.severe(ex.getMessage());
-            LOGGER.severe(ex.getLocalizedMessage());
-            LOGGER.severe(ex.getCause().getMessage());
+            LOGGER.throwing("GitlabWebhooks", "doStart", ex);
         }
 
         return response;
