@@ -1,0 +1,76 @@
+package org.jenkinsci.plugins.gitlab;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import hudson.Extension;
+import hudson.model.UnprotectedRootAction;
+import hudson.util.IOUtils;
+import org.jenkinsci.plugins.gitlab.models.webhook.MergeRequest;
+import org.jenkinsci.plugins.gitlab.models.webhook.OnlyType;
+import org.jenkinsci.plugins.gitlab.models.webhook.Push;
+import org.kohsuke.stapler.*;
+
+import javax.servlet.ServletException;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.util.logging.Logger;
+
+/**
+ * Created by lordx_000 on 11/14/2015.
+ */
+@Extension
+public class GitlabWebhooks implements UnprotectedRootAction {
+
+    private static final Logger LOGGER = Logger.getLogger(GitlabWebhooks.class.getName());
+
+    private Gson g = new GsonBuilder().setPrettyPrinting().create();
+
+    public HttpResponse doStart(StaplerRequest request) {
+
+        HttpResponse response = new HttpResponse() {
+            @Override
+            public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+                rsp.getWriter().println("accepted");
+            }
+        };
+
+        try {
+            String theString = IOUtils.toString(request.getInputStream(), "UTF-8");
+
+            OnlyType ot = g.fromJson(theString, OnlyType.class);
+
+            LOGGER.fine(theString);
+            LOGGER.fine(ot.object_kind);
+
+            if (ot.object_kind.equals("merge_request")) {
+                MergeRequest mr = g.fromJson(theString, MergeRequest.class);
+
+                LOGGER.fine(mr.toString());
+            } else if (ot.object_kind.equals("push")) {
+                Push p = g.fromJson(theString, Push.class);
+
+                LOGGER.fine(p.toString());
+            }
+
+        } catch (Exception ex) {
+            LOGGER.severe(ex.getMessage());
+        }
+
+        return response;
+    }
+
+    @Override
+    public String getIconFileName() {
+        return null;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return null;
+    }
+
+    @Override
+    public String getUrlName() {
+        return "gitlab-webhook";
+    }
+}
