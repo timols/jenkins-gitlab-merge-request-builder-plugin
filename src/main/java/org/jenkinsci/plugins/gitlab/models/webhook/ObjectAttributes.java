@@ -4,6 +4,8 @@ package org.jenkinsci.plugins.gitlab.models.webhook;
  * Created by lordx_000 on 11/14/2015.
  */
 public class ObjectAttributes {
+    public String action;
+
     public Integer id;
     public Integer iid;
     public String target_branch;
@@ -16,7 +18,8 @@ public class ObjectAttributes {
     @Override
     public String toString() {
         return "ObjectAttributes{" +
-                "id=" + id +
+                "action='" + action + '\'' +
+                ", id=" + id +
                 ", iid=" + iid +
                 ", target_branch='" + target_branch + '\'' +
                 ", target_project_id=" + target_project_id +

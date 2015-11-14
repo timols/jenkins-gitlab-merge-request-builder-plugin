@@ -56,6 +56,8 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
     @Override
     public void start(AbstractProject<?, ?> project, boolean newInstance) {
         try {
+            GitlabWebhooks.setTrigger(this);
+
             builder = GitlabMergeRequestBuilder.getBuilder()
                     .setProject(project)
                     .setTrigger(this)
