@@ -38,8 +38,5 @@
     <f:entry title="${%Ignore SSL Certificate Errors}" field="ignoreCertificateErrors">
       <f:checkbox />
     </f:entry>
-    <f:entry title="${%Update commit status}" field="updateCommitStatus" description="Gitlab 8.1 required">
-      <f:checkbox />
-    </f:entry>
   </f:section>
 </j:jelly>

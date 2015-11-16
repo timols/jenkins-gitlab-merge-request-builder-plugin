@@ -34,7 +34,7 @@ request indicating whether the merge request was successful.
 
 ## Webhooks
 * Set GitLab webhooks to use {server}/gitlab-webhook/start
-* Ensure 'Push' and 'Merge Request' checkboxes are ticked
+* Ensure 'Merge Request' checkbox is ticked
 
 ## Creating a Job
 
@@ -58,6 +58,14 @@ request indicating whether the merge request was successful.
 clone/fetch using HTTP(S) instead of SSH.
 * Configure any other pre build, build or post build actions as necessary
 * ``Save`` to preserve your changes
+
+## Default Filters
+* Assignee Filter is defaulted to 'jenkins' only MRs that have been assigned to a 'jenkins' user will auto-start
+* Label Filter is defaulted to 'Build' only MRs that have been given the label 'Build' will auto-start
+
+Changing any of the filters to an empty string will remove the filters
+
+## Manula Triggers
 
 You can trigger a job a manually by clicking ``This build is parameterized`` and adding the relevant build parameters.
 These include:
