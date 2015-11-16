@@ -53,6 +53,11 @@ public class GitlabMergeRequestWrapper {
         this.builder = builder;
     }
 
+    public void setLatestCommitOfMergeRequest(String _requestId,
+                                         String latestCommit) {
+        mergeRequestStatus.setLatestCommitOfMergeRequest(_requestId, latestCommit);
+    }
+
     public void check(GitlabMergeRequest gitlabMergeRequest) {
 
         if (mergeRequestStatus == null) {
@@ -116,7 +121,7 @@ public class GitlabMergeRequestWrapper {
             }
             if (shouldRun) {
                 if (assigneeFilterMatch(assigneeFilter, assignee)) {
-                    mergeRequestStatus.setLatestCommitOfMergeRequest(id.toString(), latestCommit.getId());
+                    setLatestCommitOfMergeRequest(id.toString(), latestCommit.getId());
                 } else {
                     shouldRun = false;
                 }

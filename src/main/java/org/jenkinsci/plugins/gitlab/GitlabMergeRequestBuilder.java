@@ -47,6 +47,10 @@ public class GitlabMergeRequestBuilder {
         return this;
     }
 
+    public Map<Integer, GitlabMergeRequestWrapper> getMergeRequests() {
+        return mergeRequests;
+    }
+
     public GitlabMergeRequestBuilder build() {
         if (mergeRequests == null || trigger == null || project == null) {
             throw new IllegalStateException();
