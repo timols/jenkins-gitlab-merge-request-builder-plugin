@@ -19,6 +19,10 @@
         description="Trigger build only if merge request is assigned to assignee username. No value will always trigger job, regardless of assignee.">
       <f:textbox default="jenkins"/>
     </f:entry>
+    <f:entry title="Build Tag Filter" field="tagFilter"
+        description="Trigger build only if merge request has been given this tag. No value will always trigger job, regardless of tags.">
+      <f:textbox default="Build"/>
+    </f:entry>
     <f:entry title="${%Enable build triggered message}" field="enableBuildTriggeredMessage">
       <f:checkbox />
     </f:entry>

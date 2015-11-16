@@ -39,8 +39,8 @@ public class GitlabMergeRequestWrapper {
 
         try {
             this.sourceProject = getSourceProject(mergeRequest, builder.getGitlab().get());
-        } catch (IOException e) {
-            // Ignore
+        } catch (IOException ex) {
+        	LOGGER.throwing("GitlabMergeRequestWrapper", "constructor", ex);
         }
         this.targetBranch = mergeRequest.getTargetBranch();
         this.project = project;
@@ -92,30 +92,10 @@ public class GitlabMergeRequestWrapper {
             }
         }
         
-        if (isAllowedByTargetBranchRegex(targetBranch)) {
-            LOGGER.log(Level.INFO, "The target regex matches the target branch {" + targetBranch + "}. Source branch {" + sourceBranch + "}");
-            shouldRun = true;
-        } else {
-            LOGGER.log(Level.INFO, "The target regex did not match the target branch {" + targetBranch + "}. Not triggering this job. Source branch {" + sourceBranch + "}");
-            return;
-        }
         try {
             GitlabAPI api = builder.getGitlab().get();
             GitlabCommit latestCommit = getLatestCommit(gitlabMergeRequest, api);
-            String assigneeFilter = builder.getTrigger().getAssigneeFilter();
-            String assignee = getAssigneeUsername(gitlabMergeRequest);
-
-            if (hasCommitStatus(latestCommit.getId(), api)) {
-            	shouldRun = false;
-            }
             
-            if (shouldRun) {
-                if (assigneeFilterMatch(assigneeFilter, assignee)) {
-                    setLatestCommitOfMergeRequest(id.toString(), latestCommit.getId());
-                } else {
-                    shouldRun = false;
-                }
-            }
             if (shouldRun) {
                 LOGGER.info("Build is supposed to run");
                 Map<String, String> customParameters = getSpecifiedCustomParameters(gitlabMergeRequest, api);
@@ -126,88 +106,6 @@ public class GitlabMergeRequestWrapper {
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Failed to fetch commits for Merge Request " + gitlabMergeRequest.getId());
         }
-    }
-    
-
-    private synchronized boolean hasCommitStatus(String commitHash, GitlabAPI api) {
-    	try {
-    		List<GitlabCommitStatus> statuses = api.getCommitStatuses(project, commitHash);
-    		
-    		for (GitlabCommitStatus status : statuses) {
-    			LOGGER.fine("Status of " + commitHash + " -> " + status.getStatus());
-    		}
-    		
-    		return true;
-		} catch (IOException ex) {
-			LOGGER.throwing("GitlabMergeRequestWrapper", "checkStatus", ex);
-		}
-    	
-    	
-    	return false;
-    }
-
-    /**
-     * Check whether the branchName can be matched using the target branch
-     * regex. Empty regex patterns will cause this method to return true.
-     *
-     * @param branchName
-     * @return true when the name can be matched or when the regex is empty.
-     * Otherwise false.
-     */
-    public boolean isAllowedByTargetBranchRegex(String branchName) {
-        String regex = builder.getTrigger().getTargetBranchRegex();
-        // Allow when no pattern has been specified. (default behavior)
-        if (StringUtils.isEmpty(regex)) {
-            return true;
-        }
-        Pattern pattern = Pattern.compile(regex);
-        return pattern.matcher(branchName).matches();
-    }
-
-    private String getAssigneeUsername(GitlabMergeRequest gitlabMergeRequest) {
-        String assigneeUsername = "";
-        if (gitlabMergeRequest.getAssignee() != null) {
-            assigneeUsername = gitlabMergeRequest.getAssignee().getUsername();
-        }
-        return assigneeUsername;
-    }
-
-    private boolean assigneeFilterMatch(String assigneeFilter, String assignee) {
-        boolean shouldRun = true;
-        if (assigneeFilter.equals("")) {
-            shouldRun = true;
-        } else {
-            if (assigneeFilter.equals(assignee)) {
-                shouldRun = true;
-            } else {
-                shouldRun = false;
-                LOGGER.info("Assignee: " + assignee + " does not match " + assigneeFilter);
-            }
-        }
-        return shouldRun;
-    }
-
-    private boolean latestCommitIsNotReached(GitlabCommit latestCommit) {
-        String lastCommit = mergeRequestStatus.getLatestCommitOfMergeRequest(id.toString());
-        if (lastCommit != null) {
-            LOGGER.info("Latest commit Jenkins remembers is " + lastCommit);
-            return !lastCommit.equals(latestCommit.getId());
-        } else {
-            LOGGER.info("Jenkins does not remember any commit of this MR");
-        }
-        return true;
-    }
-
-    private GitlabNote getLastNote(GitlabMergeRequest gitlabMergeRequest, GitlabAPI api) throws IOException {
-        List<GitlabNote> notes = getNotes(gitlabMergeRequest, api);
-
-        GitlabNote lastNote = null;
-
-        if (!notes.isEmpty()) {
-            lastNote = notes.get(notes.size() - 1);
-            LOGGER.info("Last note found: " + lastNote.getBody());
-        }
-        return lastNote;
     }
 
     private List<GitlabNote> getNotes(GitlabMergeRequest gitlabMergeRequest, GitlabAPI api) throws IOException {
@@ -241,38 +139,6 @@ public class GitlabMergeRequestWrapper {
             }
         }
         return customParams;
-    }
-
-    private GitlabNote getJenkinsNote(GitlabMergeRequest gitlabMergeRequest, GitlabAPI api) throws IOException {
-        List<GitlabNote> notes = getNotes(gitlabMergeRequest, api);
-        LOGGER.info("Notes found: " + Integer.toString(notes.size()));
-
-        GitlabNote lastJenkinsNote = null;
-
-        if (!notes.isEmpty()) {
-            String botUsernameNormalized = this.normalizeUsername(GitlabBuildTrigger.getDesc().getBotUsername());
-            Collections.reverse(notes);
-
-            for (GitlabNote note : notes) {
-                if (note.getAuthor() != null) {
-                    String noteAuthorNormalized = this.normalizeUsername(note.getAuthor().getUsername());
-                    LOGGER.finest(
-                            "Traversing notes. Author: " + note.getAuthor().getUsername() + "; " +
-                                    "normalized: " + noteAuthorNormalized
-                    );
-
-                    if (noteAuthorNormalized.equals(botUsernameNormalized)) {
-                        lastJenkinsNote = note;
-                        break;
-                    }
-                }
-            }
-        }
-        return lastJenkinsNote;
-    }
-
-    private String normalizeUsername(String username) {
-        return username.toLowerCase();
     }
 
     private GitlabCommit getLatestCommit(GitlabMergeRequest gitlabMergeRequest, GitlabAPI api) throws IOException {
@@ -330,8 +196,8 @@ public class GitlabMergeRequestWrapper {
     public String getTargetBranch() {
         return targetBranch;
     }
-
-    public GitlabNote createNote(String message, boolean shouldClose, boolean shouldMerge) {
+    
+	public GitlabNote createNote(String message, boolean shouldClose, boolean shouldMerge) {
         GitlabMergeRequest mergeRequest = new GitlabMergeRequest();
         mergeRequest.setId(id);
         mergeRequest.setIid(iid);
@@ -377,12 +243,30 @@ public class GitlabMergeRequestWrapper {
 
     private void build(Map<String, String> customParameters, String commitHash) {
         shouldRun = false;
-        String message = builder.getBuilds().build(this, customParameters, commitHash);
-
-        if (builder.isEnableBuildTriggeredMessage()) {
-            createNote(message, false, false);
-            LOGGER.log(Level.INFO, message);
-        }
+        
+        GitlabCause cause = new GitlabCause(
+        		this.getId(),
+        		this.getIid(),
+        		this.getSourceName(),
+        		this.getSourceRepository(),
+        		this.getSourceBranch(),
+        		this.getTargetBranch(),
+                customParameters,
+                this.getDescription(),
+                project.getId(),
+                commitHash);
+        
+		try {
+			String message = builder.getBuilds().build(cause, customParameters);
+			
+			if (builder.isEnableBuildTriggeredMessage()) {
+	            createNote(message, false, false);
+	            LOGGER.log(Level.INFO, message);
+	        }
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 
 }

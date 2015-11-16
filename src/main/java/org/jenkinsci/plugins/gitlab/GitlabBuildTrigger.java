@@ -28,6 +28,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
     private final String targetBranchRegex;
     private final boolean useHttpUrl;
     private final String assigneeFilter;
+    private String tagFilter;
     private final String triggerComment;
     private final boolean autoCloseFailed;
     private final boolean autoMergePassed;
@@ -39,6 +40,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
                               String targetBranchRegex,
                               boolean useHttpUrl,
                               String assigneeFilter,
+                              String tagFilter,
                               String triggerComment,
                               boolean autoCloseFailed,
                               boolean autoMergePassed) throws ANTLRException {
@@ -48,6 +50,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
         this.targetBranchRegex = targetBranchRegex;
         this.useHttpUrl = useHttpUrl;
         this.assigneeFilter = assigneeFilter;
+        this.tagFilter = tagFilter;
         this.triggerComment = triggerComment;
         this.autoCloseFailed = autoCloseFailed;
         this.autoMergePassed = autoMergePassed;
@@ -167,6 +170,10 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
     public String getAssigneeFilter() {
         return assigneeFilter;
     }
+    
+    public String getTagFilter() {
+		return tagFilter;
+	}
 
     public String getTriggerComment() {
         return triggerComment;
@@ -197,6 +204,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
         private String failureMessage = "Build finished.  Tests FAILED.";
         private boolean ignoreCertificateErrors = false;
         private boolean updateCommitStatus = false;
+        
 
         private transient Gitlab gitlab;
         private Map<String, Map<Integer, GitlabMergeRequestWrapper>> jobs;
@@ -317,7 +325,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
             return updateCommitStatus;
         }
 
-        public Map<Integer, GitlabMergeRequestWrapper> getMergeRequests(String projectName) {
+		public Map<Integer, GitlabMergeRequestWrapper> getMergeRequests(String projectName) {
             Map<Integer, GitlabMergeRequestWrapper> result;
 
             if (jobs.containsKey(projectName)) {

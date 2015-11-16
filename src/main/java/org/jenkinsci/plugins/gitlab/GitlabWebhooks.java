@@ -65,14 +65,15 @@ public class GitlabWebhooks implements UnprotectedRootAction {
                                 mergeRequest.object_attributes.target_branch,
                                 new HashMap<String, String>(),
                                 "",
+                                mergeRequest.object_attributes.source_project_id,
                                 mergeRequest.object_attributes.last_commit.id);
 
                         GitlabMergeRequestWrapper mergeRequestWrapper = trigger.getBuilder().getMergeRequests().get(mergeRequest.object_attributes.id);
                         mergeRequestWrapper.setLatestCommitOfMergeRequest(
                                 mergeRequest.object_attributes.id.toString(),
                                 mergeRequest.object_attributes.last_commit.id);
-
-                        QueueTaskFuture<?> build = trigger.startJob(cause);
+                        
+                        trigger.getBuilder().getBuilds().build(cause, new HashMap<String, String>());
                     } else {
                         LOGGER.severe("TRIGGER is not set.");
                     }

@@ -7,9 +7,17 @@ import hudson.model.queue.QueueTaskFuture;
 import jenkins.model.Jenkins;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
+
+import org.apache.commons.lang.StringUtils;
+import org.gitlab.api.GitlabAPI;
+import org.gitlab.api.models.GitlabCommitStatus;
+import org.gitlab.api.models.GitlabMergeRequest;
+import org.gitlab.api.models.GitlabProject;
 
 public class GitlabBuilds {
 
@@ -23,18 +31,129 @@ public class GitlabBuilds {
         this.repository = repository;
     }
 
-    public String build(GitlabMergeRequestWrapper mergeRequest, Map<String, String> customParameters, String commitHash) {
-        GitlabCause cause = new GitlabCause(mergeRequest.getId(), mergeRequest.getIid(),
-                mergeRequest.getSourceName(), mergeRequest.getSourceRepository(),
-                mergeRequest.getSourceBranch(), mergeRequest.getTargetBranch(), customParameters, mergeRequest.getDescription(), commitHash);
-
-        QueueTaskFuture<?> build = trigger.startJob(cause);
-        if (build == null) {
-            LOGGER.log(Level.SEVERE, "Job failed to start.");
+    public String build(GitlabCause cause, Map<String, String> customParameters) throws IOException {
+    	
+    	boolean shouldRun = true;
+    	GitlabAPI api = trigger.getBuilder().getGitlab().get();
+    	GitlabProject project = api.getProject(cause.getSourceProjectId());
+    	GitlabMergeRequest mergeRequest = api.getMergeRequest(project, cause.getMergeRequestId());
+    	
+    	if (isAllowedByTargetBranchRegex(cause.getTargetBranch())) {
+            LOGGER.log(Level.INFO, "The target regex matches the target branch {" + cause.getTargetBranch() + "}. Source branch {" + cause.getSourceBranch() + "}");
+            shouldRun = true;
+        } else {
+            LOGGER.log(Level.INFO, "The target regex did not match the target branch {" + cause.getTargetBranch() + "}. Not triggering this job. Source branch {" + cause.getSourceBranch() + "}");
+            shouldRun = false;
         }
-        return withCustomParameters(new StringBuilder("Build triggered."), customParameters).toString();
+    	
+    	if (hasCommitStatus(project, cause.getLastCommitId(), api)) {
+        	shouldRun = false;
+        }
+    	
+    	if (shouldRun) {
+    		String assigneeFilter = trigger.getAssigneeFilter();
+    		
+    		if (!"".equals(assigneeFilter)) {
+    			shouldRun = filterMatch(assigneeFilter, mergeRequest.getAssignee().getUsername(), "Assignee");
+    		}
+        }
+    	
+    	if (shouldRun) {
+    		String tagFilter = trigger.getTagFilter();
+    		
+    		if (!"".equals(tagFilter)) {
+    			shouldRun = filterMatch(tagFilter, mergeRequest.getLabels(), "Assignee");
+    		}
+        }
+    	
+    	if (shouldRun == true) {
+	    	QueueTaskFuture<?> build = trigger.startJob(cause);
+	        if (build == null) {
+	            LOGGER.log(Level.SEVERE, "Job failed to start.");
+	        }
+	        return withCustomParameters(new StringBuilder("Build triggered."), customParameters).toString();
+    	} else {
+    		return "";
+    	}
     }
-
+    
+    /**
+     * Check whether the branchName can be matched using the target branch
+     * regex. Empty regex patterns will cause this method to return true.
+     *
+     * @param branchName
+     * @return true when the name can be matched or when the regex is empty.
+     * Otherwise false.
+     */
+    public boolean isAllowedByTargetBranchRegex(String branchName) {
+        String regex = trigger.getTargetBranchRegex();
+        // Allow when no pattern has been specified. (default behavior)
+        if (StringUtils.isEmpty(regex)) {
+            return true;
+        }
+        Pattern pattern = Pattern.compile(regex);
+        return pattern.matcher(branchName).matches();
+    }
+    
+    /**
+     * 
+     * synchronized so that there can't be a race condition here.
+     * 
+     * @param project
+     * @param commitHash
+     * @param api
+     * @return
+     */
+    private synchronized boolean hasCommitStatus(GitlabProject project, String commitHash, GitlabAPI api) {
+    	try {
+    		List<GitlabCommitStatus> statuses = api.getCommitStatuses(project, commitHash);
+    		
+    		for (GitlabCommitStatus status : statuses) {
+    			LOGGER.fine("Status of " + commitHash + " -> " + status.getStatus());
+    		}
+    		
+    		return true;
+		} catch (IOException ex) {
+			LOGGER.throwing("GitlabMergeRequestWrapper", "checkStatus", ex);
+		}
+    	
+    	
+    	return false;
+    }
+    
+    private boolean filterMatch(String filter, String target, String type) {
+        boolean shouldRun = true;
+        if (filter.equals("")) {
+            shouldRun = true;
+        } else {
+            if (filter.equals(target)) {
+                shouldRun = true;
+            } else {
+                shouldRun = false;
+                LOGGER.info(type + ": " + target + " does not match " + filter);
+            }
+        }
+        return shouldRun;
+    }
+    
+    private boolean filterMatch(String filter, String target[], String type) {
+        boolean shouldRun = false;
+        if (filter.equals("")) {
+            shouldRun = true;
+        } else {
+        	
+        	for (String test : target) {
+        		if (filter.equals(target)) {
+                    shouldRun = true;
+                }
+        	}
+        	
+            if (!shouldRun) {
+                LOGGER.info(type + ": " + target + " does not match " + filter);
+            }
+        }
+        return shouldRun;
+    }
 
     private StringBuilder withCustomParameters(StringBuilder sb, Map<String, String> customParameters) {
         if (customParameters.isEmpty()) {
