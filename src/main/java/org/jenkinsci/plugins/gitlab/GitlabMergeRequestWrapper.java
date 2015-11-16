@@ -2,10 +2,7 @@ package org.jenkinsci.plugins.gitlab;
 
 import org.apache.commons.lang.StringUtils;
 import org.gitlab.api.GitlabAPI;
-import org.gitlab.api.models.GitlabCommit;
-import org.gitlab.api.models.GitlabMergeRequest;
-import org.gitlab.api.models.GitlabNote;
-import org.gitlab.api.models.GitlabProject;
+import org.gitlab.api.models.*;
 
 import java.io.IOException;
 import java.util.*;
@@ -127,7 +124,7 @@ public class GitlabMergeRequestWrapper {
             if (shouldRun) {
                 LOGGER.info("Build is supposed to run");
                 Map<String, String> customParameters = getSpecifiedCustomParameters(gitlabMergeRequest, api);
-                build(customParameters);
+                build(customParameters, latestCommit.getId());
             } else {
                 LOGGER.info("Build is not supposed to run");
             }
@@ -351,9 +348,23 @@ public class GitlabMergeRequestWrapper {
 
     }
 
-    private void build(Map<String, String> customParameters) {
+    public GitlabCommitStatus changeCommitStatus(String commitHash, String commitStatus, String targetUrl) {
+
+        try {
+            GitlabAPI api = builder.getGitlab().get();
+            GitlabMergeRequest mergeRequest = api.getMergeRequest(project, id);
+
+            return api.createCommitStatus(project, commitHash, commitStatus, mergeRequest.getSourceBranch(), "Jenkins", targetUrl, null);
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Failed to change status for merge request commit " + commitHash, e);
+        }
+
+        return null;
+    }
+
+    private void build(Map<String, String> customParameters, String commitHash) {
         shouldRun = false;
-        String message = builder.getBuilds().build(this, customParameters);
+        String message = builder.getBuilds().build(this, customParameters, commitHash);
 
         if (builder.isEnableBuildTriggeredMessage()) {
             createNote(message, false, false);
