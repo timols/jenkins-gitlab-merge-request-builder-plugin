@@ -6,7 +6,9 @@ import hudson.model.Result;
 import hudson.model.queue.QueueTaskFuture;
 import jenkins.model.Jenkins;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -62,7 +64,7 @@ public class GitlabBuilds {
     		String tagFilter = trigger.getTagFilter();
     		
     		if (!"".equals(tagFilter)) {
-    			shouldRun = filterMatch(tagFilter, mergeRequest.getLabels(), "Assignee");
+    			shouldRun = filterMatch(tagFilter, mergeRequest.getLabels(), "Labels");
     		}
         }
     	
@@ -106,8 +108,9 @@ public class GitlabBuilds {
      * @param commitHash
      * @param api
      * @return
+     * @throws IOException 
      */
-    private synchronized boolean hasCommitStatus(GitlabProject project, String commitHash, GitlabAPI api) {
+    private synchronized boolean hasCommitStatus(GitlabProject project, String commitHash, GitlabAPI api) throws IOException {
     	try {
     		List<GitlabCommitStatus> statuses = api.getCommitStatuses(project, commitHash);
     		
@@ -116,8 +119,8 @@ public class GitlabBuilds {
     		}
     		
     		return true;
-		} catch (IOException ex) {
-			LOGGER.throwing("GitlabMergeRequestWrapper", "checkStatus", ex);
+		} catch (FileNotFoundException ex) {
+			// Can ignore this one because it just means that there is no status for a commit
 		}
     	
     	
@@ -129,7 +132,7 @@ public class GitlabBuilds {
         if ("".equals(filter)) {
             shouldRun = true;
         } else {
-            if (filter.equals(target)) {
+            if (target.equals(filter)) {
                 shouldRun = true;
             } else {
                 shouldRun = false;
@@ -144,15 +147,14 @@ public class GitlabBuilds {
         if ("".equals(filter)) {
             shouldRun = true;
         } else {
-        	
         	for (String test : target) {
-        		if (filter.equals(target)) {
+        		if (test.equals(filter)) {
                     shouldRun = true;
                 }
         	}
         	
             if (!shouldRun) {
-                LOGGER.info(type + ": " + target + " does not match " + filter);
+                LOGGER.info(type + ": " + Arrays.toString(target) + " does not contain " + filter);
             }
         }
         return shouldRun;

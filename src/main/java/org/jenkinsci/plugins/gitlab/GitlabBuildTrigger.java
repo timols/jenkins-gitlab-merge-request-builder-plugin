@@ -28,7 +28,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
     private final String targetBranchRegex;
     private final boolean useHttpUrl;
     private final String assigneeFilter;
-    private String tagFilter;
+    private final String tagFilter;
     private final String triggerComment;
     private final boolean autoCloseFailed;
     private final boolean autoMergePassed;
@@ -194,6 +194,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
         private String botUsername = "jenkins";
         private String gitlabHostUrl;
         private String assigneeFilter = "jenkins";
+        private String tagFilter = "Build";
         @Deprecated
         private String botApiToken;
         private Secret botApiTokenSecret;
@@ -237,6 +238,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
             gitlabHostUrl = formData.getString("gitlabHostUrl");
             cron = formData.getString("cron");
             assigneeFilter = formData.getString("assigneeFilter");
+            tagFilter = formData.getString("tagFilter");
             enableBuildTriggeredMessage = formData.getBoolean("enableBuildTriggeredMessage");
             successMessage = formData.getString("successMessage");
             unstableMessage = formData.getString("unstableMessage");
@@ -283,8 +285,12 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
         public String getAssigneeFilter() {
             return assigneeFilter;
         }
+        
+        public String getTagFilter() {
+			return tagFilter;
+		}
 
-        public boolean isEnableBuildTriggeredMessage() {
+		public boolean isEnableBuildTriggeredMessage() {
             return enableBuildTriggeredMessage;
         }
 
