@@ -68,15 +68,15 @@ public class GitlabMergeRequestWrapper {
             iid = gitlabMergeRequest.getIid();
         }
 
-        if (targetBranch == null) {
+        if (targetBranch == null || targetBranch.trim().isEmpty()) {
             targetBranch = gitlabMergeRequest.getTargetBranch();
         }
 
-        if (sourceBranch == null) {
+        if (sourceBranch == null || sourceBranch.trim().isEmpty()) {
             sourceBranch = gitlabMergeRequest.getSourceBranch();
         }
 
-        if (description == null) {
+        if (description == null || description.trim().isEmpty()) {
             description = gitlabMergeRequest.getDescription();
         }
 
@@ -105,20 +105,10 @@ public class GitlabMergeRequestWrapper {
             String assignee = getAssigneeUsername(gitlabMergeRequest);
             String triggerComment = builder.getTrigger().getTriggerComment();
 
-            if (lastNote != null && lastNote.getBody().equals(triggerComment)) {
-                LOGGER.info("Trigger comment found");
-                shouldRun = true;
-            } else if (lastJenkinsNote == null) {
-                LOGGER.info("Latest note from Jenkins is null");
-                shouldRun = latestCommitIsNotReached(latestCommit);
-            } else if (latestCommit == null) {
-                LOGGER.log(Level.SEVERE, "Failed to determine the latest commit for merge request {" + gitlabMergeRequest.getId() + "}. This might be caused by a stalled MR in gitlab.");
-                return;
-            } else {
-                LOGGER.info("Latest note from Jenkins: " + lastJenkinsNote.getBody());
-                shouldRun = latestCommitIsNotReached(latestCommit);
-                LOGGER.info("Latest commit: " + latestCommit.getId());
+            if (hasCommitStatus(latestCommit.getId(), api)) {
+            	shouldRun = false;
             }
+            
             if (shouldRun) {
                 if (assigneeFilterMatch(assigneeFilter, assignee)) {
                     setLatestCommitOfMergeRequest(id.toString(), latestCommit.getId());
@@ -136,6 +126,24 @@ public class GitlabMergeRequestWrapper {
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Failed to fetch commits for Merge Request " + gitlabMergeRequest.getId());
         }
+    }
+    
+
+    private synchronized boolean hasCommitStatus(String commitHash, GitlabAPI api) {
+    	try {
+    		List<GitlabCommitStatus> statuses = api.getCommitStatuses(project, commitHash);
+    		
+    		for (GitlabCommitStatus status : statuses) {
+    			LOGGER.fine("Status of " + commitHash + " -> " + status.getStatus());
+    		}
+    		
+    		return true;
+		} catch (IOException ex) {
+			LOGGER.throwing("GitlabMergeRequestWrapper", "checkStatus", ex);
+		}
+    	
+    	
+    	return false;
     }
 
     /**
