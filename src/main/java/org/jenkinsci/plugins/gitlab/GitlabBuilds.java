@@ -126,7 +126,7 @@ public class GitlabBuilds {
     
     private boolean filterMatch(String filter, String target, String type) {
         boolean shouldRun = true;
-        if (filter.equals("")) {
+        if ("".equals(filter)) {
             shouldRun = true;
         } else {
             if (filter.equals(target)) {
@@ -141,7 +141,7 @@ public class GitlabBuilds {
     
     private boolean filterMatch(String filter, String target[], String type) {
         boolean shouldRun = false;
-        if (filter.equals("")) {
+        if ("".equals(filter)) {
             shouldRun = true;
         } else {
         	
