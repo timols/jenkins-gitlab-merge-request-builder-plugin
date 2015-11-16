@@ -96,13 +96,8 @@ public class GitlabMergeRequestWrapper {
             GitlabAPI api = builder.getGitlab().get();
             GitlabCommit latestCommit = getLatestCommit(gitlabMergeRequest, api);
             
-            if (shouldRun) {
-                LOGGER.info("Build is supposed to run");
-                Map<String, String> customParameters = getSpecifiedCustomParameters(gitlabMergeRequest, api);
-                build(customParameters, latestCommit.getId());
-            } else {
-                LOGGER.info("Build is not supposed to run");
-            }
+            Map<String, String> customParameters = getSpecifiedCustomParameters(gitlabMergeRequest, api);
+            build(customParameters, latestCommit.getId());
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Failed to fetch commits for Merge Request " + gitlabMergeRequest.getId());
         }

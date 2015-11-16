@@ -67,12 +67,15 @@ public class GitlabBuilds {
         }
     	
     	if (shouldRun == true) {
+    		LOGGER.info("Build is supposed to run");
+    		
 	    	QueueTaskFuture<?> build = trigger.startJob(cause);
 	        if (build == null) {
 	            LOGGER.log(Level.SEVERE, "Job failed to start.");
 	        }
 	        return withCustomParameters(new StringBuilder("Build triggered."), customParameters).toString();
     	} else {
+    		LOGGER.info("Build is not supposed to run");
     		return "";
     	}
     }
