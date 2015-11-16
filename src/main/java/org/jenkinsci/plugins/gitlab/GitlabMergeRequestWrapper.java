@@ -78,9 +78,11 @@ public class GitlabMergeRequestWrapper {
 
         if (description == null || description.trim().isEmpty()) {
             description = gitlabMergeRequest.getDescription();
+            
+            if (description == null) { description = ""; }
         }
 
-        if (sourceProject == null) {
+        if (sourceProject == null || sourceProject.getId() == null || sourceProject.getName() == null) {
             try {
                 GitlabAPI api = builder.getGitlab().get();
                 sourceProject = getSourceProject(gitlabMergeRequest, api);
@@ -89,6 +91,7 @@ public class GitlabMergeRequestWrapper {
                 return;
             }
         }
+        
         if (isAllowedByTargetBranchRegex(targetBranch)) {
             LOGGER.log(Level.INFO, "The target regex matches the target branch {" + targetBranch + "}. Source branch {" + sourceBranch + "}");
             shouldRun = true;
@@ -98,12 +101,9 @@ public class GitlabMergeRequestWrapper {
         }
         try {
             GitlabAPI api = builder.getGitlab().get();
-            GitlabNote lastJenkinsNote = getJenkinsNote(gitlabMergeRequest, api);
-            GitlabNote lastNote = getLastNote(gitlabMergeRequest, api);
             GitlabCommit latestCommit = getLatestCommit(gitlabMergeRequest, api);
             String assigneeFilter = builder.getTrigger().getAssigneeFilter();
             String assignee = getAssigneeUsername(gitlabMergeRequest);
-            String triggerComment = builder.getTrigger().getTriggerComment();
 
             if (hasCommitStatus(latestCommit.getId(), api)) {
             	shouldRun = false;
