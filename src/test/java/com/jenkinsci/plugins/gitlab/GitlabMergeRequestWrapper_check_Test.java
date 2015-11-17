@@ -1,13 +1,11 @@
 package com.jenkinsci.plugins.gitlab;
 
 import hudson.util.Secret;
-import mockit.Expectations;
 import mockit.Injectable;
 import mockit.Mock;
 import mockit.MockUp;
 import mockit.NonStrictExpectations;
 import mockit.Tested;
-import mockit.Verifications;
 import mockit.integration.junit4.JMockit;
 import org.gitlab.api.GitlabAPI;
 import org.gitlab.api.models.GitlabCommit;
@@ -27,16 +25,9 @@ import org.junit.runner.RunWith;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 
 import static mockit.Deencapsulation.getField;
-import static mockit.Deencapsulation.invoke;
-import static mockit.Deencapsulation.setField;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 @RunWith(JMockit.class)
 public class GitlabMergeRequestWrapper_check_Test {
