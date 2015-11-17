@@ -6,6 +6,9 @@ import hudson.Extension;
 import hudson.model.UnprotectedRootAction;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.util.IOUtils;
+import org.gitlab.api.GitlabAPI;
+import org.gitlab.api.models.GitlabMergeRequest;
+import org.gitlab.api.models.GitlabProject;
 import org.jenkinsci.plugins.gitlab.models.webhook.MergeRequest;
 import org.jenkinsci.plugins.gitlab.models.webhook.OnlyType;
 import org.kohsuke.stapler.*;
@@ -72,8 +75,13 @@ public class GitlabWebhooks implements UnprotectedRootAction {
                         mergeRequestWrapper.setLatestCommitOfMergeRequest(
                                 mergeRequest.object_attributes.id.toString(),
                                 mergeRequest.object_attributes.last_commit.id);
+
+
+                        GitlabAPI api = trigger.getBuilder().getGitlab().get();
+                        GitlabProject project = api.getProject(cause.getSourceProjectId());
+                        GitlabMergeRequest gitlabMergeRequest = api.getMergeRequest(project, cause.getMergeRequestId());
                         
-                        trigger.getBuilder().getBuilds().build(cause, new HashMap<String, String>());
+                        trigger.getBuilder().getBuilds().build(cause, new HashMap<String, String>(), project, gitlabMergeRequest);
                     } else {
                         LOGGER.severe("TRIGGER is not set.");
                     }

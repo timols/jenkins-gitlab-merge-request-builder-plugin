@@ -33,12 +33,10 @@ public class GitlabBuilds {
         this.repository = repository;
     }
 
-    public String build(GitlabCause cause, Map<String, String> customParameters) throws IOException {
+    public String build(GitlabCause cause, Map<String, String> customParameters, GitlabProject project, GitlabMergeRequest mergeRequest) throws IOException {
     	
     	boolean shouldRun = true;
     	GitlabAPI api = trigger.getBuilder().getGitlab().get();
-    	GitlabProject project = api.getProject(cause.getSourceProjectId());
-    	GitlabMergeRequest mergeRequest = api.getMergeRequest(project, cause.getMergeRequestId());
     	
     	if (isAllowedByTargetBranchRegex(cause.getTargetBranch())) {
             LOGGER.log(Level.INFO, "The target regex matches the target branch {" + cause.getTargetBranch() + "}. Source branch {" + cause.getSourceBranch() + "}");

@@ -97,7 +97,7 @@ public class GitlabMergeRequestWrapper {
             GitlabCommit latestCommit = getLatestCommit(gitlabMergeRequest, api);
             
             Map<String, String> customParameters = getSpecifiedCustomParameters(gitlabMergeRequest, api);
-            build(customParameters, latestCommit.getId());
+            build(customParameters, latestCommit.getId(), gitlabMergeRequest);
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Failed to fetch commits for Merge Request " + gitlabMergeRequest.getId());
         }
@@ -236,7 +236,7 @@ public class GitlabMergeRequestWrapper {
         return null;
     }
 
-    private void build(Map<String, String> customParameters, String commitHash) {
+    private void build(Map<String, String> customParameters, String commitHash, GitlabMergeRequest mergeRequest) {
         shouldRun = false;
         
         GitlabCause cause = new GitlabCause(
@@ -252,7 +252,7 @@ public class GitlabMergeRequestWrapper {
                 commitHash);
         
 		try {
-			String message = builder.getBuilds().build(cause, customParameters);
+			String message = builder.getBuilds().build(cause, customParameters, project, mergeRequest);
 			
 			if (builder.isEnableBuildTriggeredMessage()) {
 	            createNote(message, false, false);
