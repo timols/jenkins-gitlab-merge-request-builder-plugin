@@ -116,7 +116,9 @@ public class GitlabBuilds {
     			LOGGER.fine("Status of " + commitHash + " -> " + status.getStatus());
     		}
     		
-    		return true;
+    		// Return true if there are some statuses
+    		return !statuses.isEmpty();
+    		
 		} catch (FileNotFoundException ex) {
 			// Can ignore this one because it just means that there is no status for a commit
 		}
@@ -130,6 +132,9 @@ public class GitlabBuilds {
         if ("".equals(filter)) {
             shouldRun = true;
         } else {
+        	if (target == null)
+        		return false;
+        	
             if (target.equals(filter)) {
                 shouldRun = true;
             } else {
@@ -145,6 +150,9 @@ public class GitlabBuilds {
         if ("".equals(filter)) {
             shouldRun = true;
         } else {
+        	if (target == null)
+        		return false;
+        	
         	for (String test : target) {
         		if (test.equals(filter)) {
                     shouldRun = true;

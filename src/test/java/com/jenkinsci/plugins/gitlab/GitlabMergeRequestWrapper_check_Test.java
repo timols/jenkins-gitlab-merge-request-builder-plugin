@@ -85,85 +85,16 @@ public class GitlabMergeRequestWrapper_check_Test {
         triggerNote.setCreatedAt(dateFormat.parse("2015-01-02"));
     }
 
-    // This test asserts the default givens for this suite. Individual test methods will identify when they change this.
-    @Test
-    public void given_noJenkinsNote_noLastNote_latestCommitIsNotReached() throws Exception {
-        assertNull(invoke(subject, "getJenkinsNote", mergeRequest, api));
-        assertNull(invoke(subject, "getLastNote", mergeRequest, api));
-        assertTrue((boolean) invoke(subject, "latestCommitIsNotReached", commit));
-    }
-
     @Test
     public void builds() throws Exception {
-        subject.check(mergeRequest);
-
-        new Verifications() {{
-            invoke(subject, "build", new HashMap<String, String>());
-        }};
-    }
-
-    @Test
-    public void builds_givenAJenkinsNote() throws Exception {
-        new Expectations() {{
-            api.getAllNotes(mergeRequest); result = Arrays.asList(jenkinsNote);
-        }};
-
-        assertEquals(invoke(subject, "getJenkinsNote", mergeRequest, api), jenkinsNote);
-
-        subject.check(mergeRequest);
-
-        new Verifications() {{
-            invoke(subject, "build", new HashMap<String, String>());
-        }};
-    }
-
-    @Test
-    public void doesNotBuild_givenAJenkinsNoteAndAReachableLatestCommit() throws Exception {
-        new MockUp<GitlabMergeRequestWrapper>() {
-            @Mock(invocations = 0) void build(Map m) {}
+    	
+    	new MockUp<GitlabMergeRequestWrapper>() {
+            @Mock(invocations = 1) void build(Map m, String s, GitlabMergeRequest mr) {}
         };
-
-        new Expectations() {{
-            api.getAllNotes(mergeRequest); result = Arrays.asList(jenkinsNote);
-        }};
-
-        ((GitlabMergeRequestStatus) getField(subject, "mergeRequestStatus")).setLatestCommitOfMergeRequest(
-                mergeRequest.getId().toString(),
-                commit.getId());
-
-        assertEquals(invoke(subject, "getJenkinsNote", mergeRequest, api), jenkinsNote);
-        assertFalse((boolean) invoke(subject, "latestCommitIsNotReached", commit));
-
+    	
+    	setAReachableLatestCommit();
+    	
         subject.check(mergeRequest);
-    }
-
-    @Test
-    public void doesNotBuild_givenAReachableLatestCommit() throws Exception {
-        new MockUp<GitlabMergeRequestWrapper>() {
-            @Mock(invocations = 0) void build(Map m) {}
-        };
-
-        setAReachableLatestCommit();
-
-        subject.check(mergeRequest);
-    }
-
-    @Test
-    public void builds_givenATriggerCommentAndAReachableLatestCommit() throws Exception {
-        new Expectations() {{
-            api.getAllNotes(mergeRequest); result = Arrays.asList(triggerNote);
-        }};
-
-        setAReachableLatestCommit();
-
-        assertEquals(invoke(subject, "getLastNote", mergeRequest, api), triggerNote);
-        assertFalse((boolean) invoke(subject, "latestCommitIsNotReached", commit));
-
-        subject.check(mergeRequest);
-
-        new Verifications() {{
-            invoke(subject, "build", new HashMap<String, String>());
-        }};
     }
 
     private void setAReachableLatestCommit() {
