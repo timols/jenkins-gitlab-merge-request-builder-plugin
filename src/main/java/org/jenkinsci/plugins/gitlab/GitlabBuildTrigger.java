@@ -246,7 +246,6 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
             save();
 
             gitlab = new Gitlab();
-            gitlab.get().ignoreCertificateErrors(ignoreCertificateErrors);
 
             return super.configure(req, formData);
         }
@@ -315,7 +314,6 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
         public Gitlab getGitlab() {
             if (gitlab == null) {
                 gitlab = new Gitlab();
-                gitlab.get().ignoreCertificateErrors(ignoreCertificateErrors);
             }
             return gitlab;
         }

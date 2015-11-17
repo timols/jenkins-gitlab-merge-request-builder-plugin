@@ -228,7 +228,7 @@ public class GitlabMergeRequestWrapper {
             GitlabAPI api = builder.getGitlab().get();
             GitlabMergeRequest mergeRequest = api.getMergeRequest(project, id);
 
-            return api.createCommitStatus(project, commitHash, commitStatus, mergeRequest.getSourceBranch(), "Jenkins", targetUrl, null);
+            return builder.getGitlab().changeCommitStatus(project.getId(), mergeRequest.getSourceBranch(), commitHash, commitStatus, targetUrl);
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Failed to change status for merge request commit " + commitHash, e);
         }
