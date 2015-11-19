@@ -32,6 +32,10 @@ request indicating whether the merge request was successful.
 * ``Save`` to preserve your changes.
 * Go to `Manage Jenkins` -> `Configure Global Security` and set `Markup Formatter` to *Safe HTML*. It will make Jenkins display links in build history properly.
 
+## Webhooks
+* Set GitLab webhooks to use {server}/gitlab-webhook/start
+* Ensure 'Push' and 'Merge Request' checkboxes are ticked
+
 ## Creating a Job
 
 * Create a new job by going to ``New Job``

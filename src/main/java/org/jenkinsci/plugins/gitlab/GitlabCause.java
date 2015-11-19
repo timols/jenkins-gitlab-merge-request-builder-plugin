@@ -13,6 +13,7 @@ public class GitlabCause extends Cause {
     private final String targetBranch;
     private final Map<String, String> customParameters;
     private final String description;
+    private final String lastCommitId;
 
     public GitlabCause(Integer mergeRequestId,
                        Integer mergeRequestIid,
@@ -21,7 +22,8 @@ public class GitlabCause extends Cause {
                        String sourceBranch,
                        String targetBranch,
                        Map<String, String> customParameters,
-                       String description) {
+                       String description,
+                       String lastCommitId) {
         this.mergeRequestId = mergeRequestId;
         this.mergeRequestIid = mergeRequestIid;
         this.sourceName = sourceName;
@@ -30,6 +32,7 @@ public class GitlabCause extends Cause {
         this.targetBranch = targetBranch;
         this.customParameters = customParameters;
         this.description = description;
+        this.lastCommitId = lastCommitId;
     }
 
 
@@ -71,4 +74,7 @@ public class GitlabCause extends Cause {
         return description;
     }
 
+    public String getLastCommitId() {
+        return lastCommitId;
+    }
 }

@@ -23,10 +23,10 @@ public class GitlabBuilds {
         this.repository = repository;
     }
 
-    public String build(GitlabMergeRequestWrapper mergeRequest, Map<String, String> customParameters) {
+    public String build(GitlabMergeRequestWrapper mergeRequest, Map<String, String> customParameters, String commitHash) {
         GitlabCause cause = new GitlabCause(mergeRequest.getId(), mergeRequest.getIid(),
                 mergeRequest.getSourceName(), mergeRequest.getSourceRepository(),
-                mergeRequest.getSourceBranch(), mergeRequest.getTargetBranch(), customParameters, mergeRequest.getDescription());
+                mergeRequest.getSourceBranch(), mergeRequest.getTargetBranch(), customParameters, mergeRequest.getDescription(), commitHash);
 
         QueueTaskFuture<?> build = trigger.startJob(cause);
         if (build == null) {
@@ -83,6 +83,9 @@ public class GitlabBuilds {
         sb.append("[").append(url).append("](").append(url).append(")");
         repository.createNote(cause.getMergeRequestId(), sb.toString(), false, false);
 
+        if (trigger.getDescriptor().isUpdateCommitStatus()) {
+            repository.changeCommitStatus(cause.getMergeRequestId(), cause.getLastCommitId(), "running", url);
+        }
     }
 
     public void onCompleted(AbstractBuild build) {
@@ -134,6 +137,11 @@ public class GitlabBuilds {
         }
 
         repository.createNote(cause.getMergeRequestId(), stringBuilder.toString(), shouldClose, shouldMerge);
+
+        if (trigger.getDescriptor().isUpdateCommitStatus()) {
+            String status = (build.getResult() == Result.SUCCESS) ? "success" : "failed";
+            repository.changeCommitStatus(cause.getMergeRequestId(), cause.getLastCommitId(), status, buildUrl);
+        }
     }
 
     private String getOnStartedMessage(GitlabCause cause) {
