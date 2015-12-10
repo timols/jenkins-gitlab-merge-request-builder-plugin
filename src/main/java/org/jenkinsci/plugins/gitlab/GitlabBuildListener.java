@@ -17,6 +17,7 @@ public class GitlabBuildListener extends RunListener<AbstractBuild> {
         }
 
         trigger.getBuilder().getBuilds().onStarted(abstractBuild);
+        
     }
 
     @Override

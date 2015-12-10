@@ -1,13 +1,11 @@
 package com.jenkinsci.plugins.gitlab;
 
 import hudson.util.Secret;
-import mockit.Expectations;
 import mockit.Injectable;
 import mockit.Mock;
 import mockit.MockUp;
 import mockit.NonStrictExpectations;
 import mockit.Tested;
-import mockit.Verifications;
 import mockit.integration.junit4.JMockit;
 import org.gitlab.api.GitlabAPI;
 import org.gitlab.api.models.GitlabCommit;
@@ -27,16 +25,9 @@ import org.junit.runner.RunWith;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 
 import static mockit.Deencapsulation.getField;
-import static mockit.Deencapsulation.invoke;
-import static mockit.Deencapsulation.setField;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 @RunWith(JMockit.class)
 public class GitlabMergeRequestWrapper_check_Test {
@@ -85,85 +76,16 @@ public class GitlabMergeRequestWrapper_check_Test {
         triggerNote.setCreatedAt(dateFormat.parse("2015-01-02"));
     }
 
-    // This test asserts the default givens for this suite. Individual test methods will identify when they change this.
-    @Test
-    public void given_noJenkinsNote_noLastNote_latestCommitIsNotReached() throws Exception {
-        assertNull(invoke(subject, "getJenkinsNote", mergeRequest, api));
-        assertNull(invoke(subject, "getLastNote", mergeRequest, api));
-        assertTrue((boolean) invoke(subject, "latestCommitIsNotReached", commit));
-    }
-
     @Test
     public void builds() throws Exception {
-        subject.check(mergeRequest);
-
-        new Verifications() {{
-            invoke(subject, "build", new HashMap<String, String>());
-        }};
-    }
-
-    @Test
-    public void builds_givenAJenkinsNote() throws Exception {
-        new Expectations() {{
-            api.getAllNotes(mergeRequest); result = Arrays.asList(jenkinsNote);
-        }};
-
-        assertEquals(invoke(subject, "getJenkinsNote", mergeRequest, api), jenkinsNote);
-
-        subject.check(mergeRequest);
-
-        new Verifications() {{
-            invoke(subject, "build", new HashMap<String, String>());
-        }};
-    }
-
-    @Test
-    public void doesNotBuild_givenAJenkinsNoteAndAReachableLatestCommit() throws Exception {
-        new MockUp<GitlabMergeRequestWrapper>() {
-            @Mock(invocations = 0) void build(Map m) {}
+    	
+    	new MockUp<GitlabMergeRequestWrapper>() {
+            @Mock(invocations = 1) void build(Map m, String s, GitlabMergeRequest mr) {}
         };
-
-        new Expectations() {{
-            api.getAllNotes(mergeRequest); result = Arrays.asList(jenkinsNote);
-        }};
-
-        ((GitlabMergeRequestStatus) getField(subject, "mergeRequestStatus")).setLatestCommitOfMergeRequest(
-                mergeRequest.getId().toString(),
-                commit.getId());
-
-        assertEquals(invoke(subject, "getJenkinsNote", mergeRequest, api), jenkinsNote);
-        assertFalse((boolean) invoke(subject, "latestCommitIsNotReached", commit));
-
+    	
+    	setAReachableLatestCommit();
+    	
         subject.check(mergeRequest);
-    }
-
-    @Test
-    public void doesNotBuild_givenAReachableLatestCommit() throws Exception {
-        new MockUp<GitlabMergeRequestWrapper>() {
-            @Mock(invocations = 0) void build(Map m) {}
-        };
-
-        setAReachableLatestCommit();
-
-        subject.check(mergeRequest);
-    }
-
-    @Test
-    public void builds_givenATriggerCommentAndAReachableLatestCommit() throws Exception {
-        new Expectations() {{
-            api.getAllNotes(mergeRequest); result = Arrays.asList(triggerNote);
-        }};
-
-        setAReachableLatestCommit();
-
-        assertEquals(invoke(subject, "getLastNote", mergeRequest, api), triggerNote);
-        assertFalse((boolean) invoke(subject, "latestCommitIsNotReached", commit));
-
-        subject.check(mergeRequest);
-
-        new Verifications() {{
-            invoke(subject, "build", new HashMap<String, String>());
-        }};
     }
 
     private void setAReachableLatestCommit() {
