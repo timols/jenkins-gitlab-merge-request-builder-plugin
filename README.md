@@ -44,7 +44,7 @@ request indicating whether the merge request was successful.
 * In the ``Source Code Management`` section:
     * Click ``Git`` and enter your Repository URL and in Advanced set its Name to ``origin``
     * For merge requests from forked repositories add another repository with Repository URL ``${gitlabSourceRepository}`` and in Advanced set Name to ``${gitlabSourceName}``
-    * In ``Branch Specifier`` enter ``refs/remotes/origin/${gitlabSourceBranch}`` or for merge requests from forked repositories enter ``refs/remotes/${gitlabSourceName}/${gitlabSourceBranch}``
+    * In ``Branch Specifier`` enter ``refs/remotes/origin/${gitlabSourceBranch}`` or for merge requests from forked repositories enter ``${gitlabSourceName}/${gitlabSourceBranch}``
     * In the ``Additional Behaviours`` section:
         * Click the ``Add`` drop down button and the ``Merge before build`` item
         * Specify the name of the repository as ``origin`` (if origin corresponds to Gitlab) and enter the
