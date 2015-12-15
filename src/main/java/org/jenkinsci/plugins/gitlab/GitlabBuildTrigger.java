@@ -77,13 +77,15 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
     public QueueTaskFuture<?> startJob(GitlabCause cause) {
         Map<String, ParameterValue> values = getDefaultParameters();
 
-        values.put("gitlabMergeRequestId", new StringParameterValue("gitlabMergeRequestId", String.valueOf(cause.getMergeRequestId())));
-        values.put("gitlabMergeRequestIid", new StringParameterValue("gitlabMergeRequestIid", String.valueOf(cause.getMergeRequestIid())));
-        values.put("gitlabSourceName", new StringParameterValue("gitlabSourceName", cause.getSourceName()));
-        values.put("gitlabSourceRepository", new StringParameterValue("gitlabSourceRepository", cause.getSourceRepository()));
-        values.put("gitlabSourceBranch", new StringParameterValue("gitlabSourceBranch", cause.getSourceBranch()));
-        values.put("gitlabTargetBranch", new StringParameterValue("gitlabTargetBranch", cause.getTargetBranch()));
-        values.put("gitlabDescription", new StringParameterValue("gitlabDescription", cause.getDescription()));
+        if(getDesc().isRelayGitlabParametersToBuild()) {
+          values.put("gitlabMergeRequestId", new StringParameterValue("gitlabMergeRequestId", String.valueOf(cause.getMergeRequestId())));
+          values.put("gitlabMergeRequestIid", new StringParameterValue("gitlabMergeRequestIid", String.valueOf(cause.getMergeRequestIid())));
+          values.put("gitlabSourceName", new StringParameterValue("gitlabSourceName", cause.getSourceName()));
+          values.put("gitlabSourceRepository", new StringParameterValue("gitlabSourceRepository", cause.getSourceRepository()));
+          values.put("gitlabSourceBranch", new StringParameterValue("gitlabSourceBranch", cause.getSourceBranch()));
+          values.put("gitlabTargetBranch", new StringParameterValue("gitlabTargetBranch", cause.getTargetBranch()));
+          values.put("gitlabDescription", new StringParameterValue("gitlabDescription", cause.getDescription()));
+        }
         for (Map.Entry<String, String> entry : cause.getCustomParameters().entrySet()) {
             values.put(entry.getKey(), new StringParameterValue(entry.getKey(), entry.getValue()));
         }
@@ -204,6 +206,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
         private String unstableMessage = "Build finished.  Tests FAILED.";
         private String failureMessage = "Build finished.  Tests FAILED.";
         private boolean ignoreCertificateErrors = false;
+        private boolean relayGitlabParametersToBuild = true;
 
         private transient Gitlab gitlab;
         private Map<String, Map<Integer, GitlabMergeRequestWrapper>> jobs;
@@ -242,7 +245,8 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
             unstableMessage = formData.getString("unstableMessage");
             failureMessage = formData.getString("failureMessage");
             ignoreCertificateErrors = formData.getBoolean("ignoreCertificateErrors");
-
+            relayGitlabParametersToBuild = formData.getBoolean("relayGitlabParametersToBuild");
+            
             save();
 
             gitlab = new Gitlab();
@@ -322,7 +326,11 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
             return ignoreCertificateErrors;
         }
 
-		public Map<Integer, GitlabMergeRequestWrapper> getMergeRequests(String projectName) {
+        public boolean isRelayGitlabParametersToBuild() {
+          return relayGitlabParametersToBuild;
+        }
+
+    public Map<Integer, GitlabMergeRequestWrapper> getMergeRequests(String projectName) {
             Map<Integer, GitlabMergeRequestWrapper> result;
 
             if (jobs.containsKey(projectName)) {
