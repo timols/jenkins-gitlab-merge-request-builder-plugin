@@ -65,7 +65,7 @@ clone/fetch using HTTP(S) instead of SSH.
 
 Changing any of the filters to an empty string will remove the filters
 
-## Manula Triggers
+## Manual Triggers
 
 You can trigger a job a manually by clicking ``This build is parameterized`` and adding the relevant build parameters.
 These include:
