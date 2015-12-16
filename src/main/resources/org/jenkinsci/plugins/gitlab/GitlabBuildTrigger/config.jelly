@@ -34,4 +34,8 @@
             description="On success, auto merge the request">
         <f:checkbox />
     </f:entry>
+    <f:entry title="Relay Gitlab parameters to build command" field="relayGitlabParametersToBuild"
+            description="If checked, all gitlab-prefixed parameters (gitlabSourceBranch, gitlabTargetBranch, gitlabDescription, etc) will be passed to the build command as -D options (environment variables). Consider this option on Windows systems, where multi-line commit comments in gitlabDescription may prevent successful builds.">
+        <f:checkbox />
+    </f:entry>
 </j:jelly>
