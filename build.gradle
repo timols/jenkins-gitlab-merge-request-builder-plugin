@@ -19,7 +19,7 @@ sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
 group = 'com.switchfly'
-version = '2.0.0'
+version = '2.0.1-SNAPSHOT'
 description = 'A plugin to build merge requests in Gitlab'
 
 jenkinsPlugin {
