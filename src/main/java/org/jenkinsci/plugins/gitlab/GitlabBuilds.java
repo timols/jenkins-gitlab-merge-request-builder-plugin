@@ -76,7 +76,7 @@ public class GitlabBuilds {
 	        return withCustomParameters(new StringBuilder("Build triggered."), customParameters).toString();
     	} else {
     		LOGGER.info("Build is not supposed to run");
-    		return "";
+    		return "Build triggered. But it is not supposed to run.";
     	}
     }
     
