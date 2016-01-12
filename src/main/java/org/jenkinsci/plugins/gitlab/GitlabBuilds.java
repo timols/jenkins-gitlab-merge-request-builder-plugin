@@ -54,7 +54,8 @@ public class GitlabBuilds {
     		String assigneeFilter = trigger.getAssigneeFilter();
     		
     		if (!"".equals(assigneeFilter)) {
-    			shouldRun = filterMatch(assigneeFilter, mergeRequest.getAssignee().getUsername(), "Assignee");
+    			String assigneeName = mergeRequest.getAssignee() != null ? mergeRequest.getAssignee().getUsername() : null;
+    			shouldRun = filterMatch(assigneeFilter, assigneeName, "Assignee");
     		}
         }
     	
