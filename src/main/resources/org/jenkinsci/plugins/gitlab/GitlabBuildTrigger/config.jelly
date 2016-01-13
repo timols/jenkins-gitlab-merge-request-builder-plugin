@@ -5,7 +5,7 @@
         <f:textbox />
     </f:entry>
     <f:entry title="Target Branch Regex" field="targetBranchRegex"
-            description="The full path including namespace to the project">
+            description="Trigger build only if the target branch of the merge request matches this regex.">
         <f:textbox />
     </f:entry>
     <f:entry title="${%Crontab line}" field="cron" help="/descriptor/hudson.triggers.TimerTrigger/help/spec">
