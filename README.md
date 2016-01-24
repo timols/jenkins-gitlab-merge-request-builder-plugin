@@ -6,6 +6,10 @@ This plugin fetches the source and target branches of a Gitlab merge request and
 to your build via build parameters. Once the build completes, Jenkins will leave a comment on the merge
 request indicating whether the merge request was successful.
 
+## Supported Gitlab Versions
+ * Gitlab version < 8.1.X: use v1.2.4 of this plugin
+ * Gitlab version >= 8.1.X: use the latest version of this plugin
+
 ## Prerequisites
 
 * Whilst there is no explicit dependency on the [Git plugin](https://wiki.jenkins-ci.org/display/JENKINS/Git+Plugin),
