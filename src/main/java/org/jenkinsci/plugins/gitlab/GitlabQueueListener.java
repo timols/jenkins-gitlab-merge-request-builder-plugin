@@ -22,7 +22,7 @@ public class GitlabQueueListener extends QueueListener {
 				
 				try {
 					String url = Jenkins.getInstance().getRootUrl() + wi.getUrl();
-					gitlab.changeCommitStatus(cause.getSourceProjectId(), cause.getSourceBranch(), cause.getLastCommitId(), "pending", url);
+					gitlab.changeCommitStatus(cause.getTargetProjectId(), cause.getSourceBranch(), cause.getLastCommitId(), "pending", url);
 				} catch (IOException e) {
 					LOGGER.info("error trying to set pending status");
 				}

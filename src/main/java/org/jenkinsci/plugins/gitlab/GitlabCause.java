@@ -14,6 +14,7 @@ public class GitlabCause extends Cause {
     private final Map<String, String> customParameters;
     private final String description;
     private final Integer sourceProjectId;
+    private final Integer targetProjectId;
     private final String lastCommitId;
 
     public GitlabCause(Integer mergeRequestId,
@@ -25,6 +26,7 @@ public class GitlabCause extends Cause {
                        Map<String, String> customParameters,
                        String description,
                        Integer sourceProjectId,
+                       Integer targetProjectId, 
                        String lastCommitId) {
     	
         this.mergeRequestId = mergeRequestId;
@@ -36,6 +38,7 @@ public class GitlabCause extends Cause {
         this.customParameters = customParameters;
         this.description = description;
         this.sourceProjectId = sourceProjectId;
+        this.targetProjectId = targetProjectId;
         this.lastCommitId = lastCommitId;
     }
 
@@ -82,6 +85,9 @@ public class GitlabCause extends Cause {
 		return sourceProjectId;
 	}
 
+    public Integer getTargetProjectId() {
+		return targetProjectId;
+	}
 
 	public String getLastCommitId() {
         return lastCommitId;

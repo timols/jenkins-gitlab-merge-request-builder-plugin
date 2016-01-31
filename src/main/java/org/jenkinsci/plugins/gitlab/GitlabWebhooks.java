@@ -69,17 +69,24 @@ public class GitlabWebhooks implements UnprotectedRootAction {
                                 new HashMap<String, String>(),
                                 "",
                                 mergeRequest.object_attributes.source_project_id,
+                                mergeRequest.object_attributes.target_project_id,
                                 mergeRequest.object_attributes.last_commit.id);
 
-                        GitlabMergeRequestWrapper mergeRequestWrapper = trigger.getBuilder().getMergeRequests().get(mergeRequest.object_attributes.id);
+                        GitlabAPI api = trigger.getBuilder().getGitlab().get();
+                        GitlabProject project = api.getProject(cause.getTargetProjectId());
+                        GitlabMergeRequest gitlabMergeRequest = api.getMergeRequest(project, cause.getMergeRequestId());
+
+                        GitlabMergeRequestWrapper mergeRequestWrapper;
+                        if (trigger.getBuilder().getMergeRequests().containsKey(mergeRequest.object_attributes.id)) {
+                            mergeRequestWrapper = trigger.getBuilder().getMergeRequests().get(mergeRequest.object_attributes.id);
+                        } else {
+                            mergeRequestWrapper = new GitlabMergeRequestWrapper(gitlabMergeRequest, trigger.getBuilder(), project);
+                            trigger.getBuilder().getMergeRequests().put(mergeRequest.object_attributes.id, mergeRequestWrapper);
+                        }
+
                         mergeRequestWrapper.setLatestCommitOfMergeRequest(
                                 mergeRequest.object_attributes.id.toString(),
                                 mergeRequest.object_attributes.last_commit.id);
-
-
-                        GitlabAPI api = trigger.getBuilder().getGitlab().get();
-                        GitlabProject project = api.getProject(cause.getSourceProjectId());
-                        GitlabMergeRequest gitlabMergeRequest = api.getMergeRequest(project, cause.getMergeRequestId());
                         
                         trigger.getBuilder().getBuilds().build(cause, new HashMap<String, String>(), project, gitlabMergeRequest);
                     } else {
