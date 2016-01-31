@@ -51,6 +51,7 @@ public class GitlabBuilds_build_Test {
 		new HashMap<String, String>(),
 		"description",
 		3,
+		4, 
 		"commitHash"
 	);
 

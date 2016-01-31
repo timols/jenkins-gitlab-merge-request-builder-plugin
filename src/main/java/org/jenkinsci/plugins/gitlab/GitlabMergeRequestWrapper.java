@@ -248,6 +248,7 @@ public class GitlabMergeRequestWrapper {
         		this.getTargetBranch(),
                 customParameters,
                 this.getDescription(),
+                this.sourceProject.getId(),
                 project.getId(),
                 commitHash);
         
