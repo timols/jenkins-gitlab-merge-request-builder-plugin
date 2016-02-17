@@ -14,11 +14,14 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.Comparator;
+import java.util.Collections;
 
 import org.apache.commons.lang.StringUtils;
 import org.gitlab.api.GitlabAPI;
 import org.gitlab.api.models.GitlabCommitStatus;
 import org.gitlab.api.models.GitlabMergeRequest;
+import org.gitlab.api.models.GitlabNote;
 import org.gitlab.api.models.GitlabProject;
 
 public class GitlabBuilds {
@@ -37,6 +40,8 @@ public class GitlabBuilds {
     	
     	boolean shouldRun = true;
     	GitlabAPI api = trigger.getBuilder().getGitlab().get();
+        String triggerComment = trigger.getTriggerComment();
+        GitlabNote lastNote = getLastNote(mergeRequest, api);
     	
     	if (isAllowedByTargetBranchRegex(cause.getTargetBranch())) {
             LOGGER.log(Level.INFO, "The target regex matches the target branch {" + cause.getTargetBranch() + "}. Source branch {" + cause.getSourceBranch() + "}");
@@ -49,7 +54,12 @@ public class GitlabBuilds {
     	if (hasCommitStatus(project, cause.getLastCommitId(), api)) {
         	shouldRun = false;
         }
-    	
+
+        if (lastNote != null && lastNote.getBody().equals(triggerComment)) {
+            LOGGER.info("Trigger comment found");
+            shouldRun = true;
+        }
+
     	if (shouldRun) {
     		String assigneeFilter = trigger.getAssigneeFilter();
     		
@@ -126,6 +136,29 @@ public class GitlabBuilds {
     	
     	
     	return false;
+    }
+
+    private GitlabNote getLastNote(GitlabMergeRequest gitlabMergeRequest, GitlabAPI api) throws IOException {
+        List<GitlabNote> notes = getNotes(gitlabMergeRequest, api);
+
+        GitlabNote lastNote = null;
+
+        if (!notes.isEmpty()) {
+            lastNote = notes.get(notes.size() - 1);
+            LOGGER.info("Last note found: " + lastNote.getBody());
+        }
+        return lastNote;
+    }
+
+    private List<GitlabNote> getNotes(GitlabMergeRequest gitlabMergeRequest, GitlabAPI api) throws IOException {
+        List<GitlabNote> notes = api.getAllNotes(gitlabMergeRequest);
+
+        Collections.sort(notes, new Comparator<GitlabNote>() {
+            public int compare(GitlabNote o1, GitlabNote o2) {
+                return o1.getCreatedAt().compareTo(o2.getCreatedAt());
+            }
+        });
+        return notes;
     }
     
     private boolean filterMatch(String filter, String target, String type) {
