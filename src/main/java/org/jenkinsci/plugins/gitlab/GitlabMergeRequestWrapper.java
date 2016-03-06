@@ -95,6 +95,10 @@ public class GitlabMergeRequestWrapper {
         try {
             GitlabAPI api = builder.getGitlab().get();
             GitlabCommit latestCommit = getLatestCommit(gitlabMergeRequest, api);
+
+            if (latestCommit == null) { // the source branch has been removed
+                return;
+            }
             
             Map<String, String> customParameters = getSpecifiedCustomParameters(gitlabMergeRequest, api);
             build(customParameters, latestCommit.getId(), gitlabMergeRequest);
