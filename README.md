@@ -17,9 +17,10 @@ request indicating whether the merge request was successful.
 
 ## Installation
 
-* Ensure that a Jenkins user exists within Gitlab and has access to the repository. Ensure that the user
-  has **Reporter** level access to the project. Please note that if you would like to use the Auto-merge feature
-  Jenkins needs to have **Developer** access to the project.
+* Ensure that a Jenkins user exists within Gitlab and has access to the repository.
+    * For Gitlab version < 8.4.X: ensure that the user has **Reporter** level access to the project.
+    * For Gitlab version >= 8.4.X: ensure that the user has **Developer** level access to the project.
+    * Please note that if you would like to use the Auto-merge feature Jenkins needs to have **Developer** access to the project.
 * Install the plugin in Jenkins.
     * The plugin is hosted on the [Jenkins Plugin repository](https://wiki.jenkins-ci.org/display/JENKINS/Gitlab+Merge+Request+Builder+Plugin)
     * Go to ``Jenkins`` -> ``Manage Plugins`` -> ``Available``
