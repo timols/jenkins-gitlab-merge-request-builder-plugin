@@ -10,7 +10,7 @@
 
     <groupId>com.switchfly</groupId>
     <artifactId>gitlab-merge-request-jenkins</artifactId>
-    <version>2.0.1-SNAPSHOT</version>
+    <version>2.0.1</version>
     <packaging>hpi</packaging>
 
     <name>Gitlab Merge Request Builder</name>
@@ -21,7 +21,8 @@
         <connection>scm:git:ssh://github.com/timols/jenkins-gitlab-merge-request-builder-plugin.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/timols/jenkins-gitlab-merge-request-builder-plugin.git</developerConnection>
         <url>https://github.com/timols/jenkins-gitlab-merge-request-builder-plugin</url>
-    </scm>
+      <tag>2.0.1</tag>
+  </scm>
 
     <developers>
         <developer>
