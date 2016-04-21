@@ -1,5 +1,8 @@
 package com.jenkinsci.plugins.gitlab;
 
+import hudson.model.AbstractBuild;
+import hudson.model.Cause;
+import hudson.model.Result;
 import hudson.util.Secret;
 
 import java.io.IOException;
@@ -7,23 +10,18 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-import mockit.Injectable;
-import mockit.Mock;
-import mockit.MockUp;
-import mockit.NonStrictExpectations;
-import mockit.Tested;
-import mockit.Verifications;
+import jenkins.model.Jenkins;
+import mockit.*;
 import mockit.integration.junit4.JMockit;
+
+import static mockit.Deencapsulation.invoke;
 
 import org.gitlab.api.GitlabAPI;
 import org.gitlab.api.models.GitlabCommitStatus;
 import org.gitlab.api.models.GitlabMergeRequest;
 import org.gitlab.api.models.GitlabProject;
 import org.gitlab.api.models.GitlabUser;
-import org.jenkinsci.plugins.gitlab.GitlabBuilds;
-import org.jenkinsci.plugins.gitlab.GitlabCause;
-import org.jenkinsci.plugins.gitlab.GitlabRepository;
-import org.jenkinsci.plugins.gitlab.GitlabBuildTrigger;
+import org.jenkinsci.plugins.gitlab.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -31,120 +29,262 @@ import org.junit.runner.RunWith;
 
 @RunWith(JMockit.class)
 public class GitlabBuilds_build_Test {
-	@Injectable GitlabAPI api;
-	@Injectable GitlabProject project;
-	@Injectable GitlabUser user;
-	@Injectable GitlabMergeRequest mergeRequest;
+    @Injectable
+    GitlabAPI api;
+    @Injectable
+    GitlabProject project;
+    @Injectable
+    GitlabUser user;
+    @Injectable
+    GitlabMergeRequest mergeRequest;
 
-	@Injectable GitlabBuildTrigger trigger;
-	@Injectable GitlabRepository repository;
+    @Injectable
+    GitlabBuildTrigger trigger;
+    @Injectable
+    GitlabRepository repository;
 
-	@Tested GitlabBuilds subject;
+    @Tested
+    GitlabBuilds subject;
 
-	GitlabCause cause = new GitlabCause(
-		1,
-		2,
-		"sourceName",
-		"sourceRepo",
-		"sourceBranch",
-		"targetBranch",
-		new HashMap<String, String>(),
-		"description",
-		3,
-		4, 
-		"commitHash"
-	);
 
-	List<GitlabCommitStatus> statuses = Arrays.asList( new GitlabCommitStatus() );
+    GitlabCause cause = new GitlabCause(
+            1,
+            2,
+            "sourceName",
+            "sourceRepo",
+            "sourceBranch",
+            "targetBranch",
+            new HashMap<String, String>(),
+            "description",
+            3,
+            4,
+            "commitHash"
+    );
 
-	@BeforeClass
-  public static void beforeClass() {
-		new MockUp<GitlabBuildTrigger.GitlabBuildTriggerDescriptor>() {
-      @Mock void load() {}
-    };
+    List<GitlabCommitStatus> statuses = Arrays.asList(new GitlabCommitStatus());
 
-    new MockUp<Secret>() {
-      @Mock Secret fromString(String data) { return null; }
-    };
-	}
+    @BeforeClass
+    public static void beforeClass() {
+        new MockUp<GitlabBuildTrigger.GitlabBuildTriggerDescriptor>() {
+            @Mock
+            void load() {
+            }
+        };
 
-	@Before
-  public void before() throws Exception {
+        new MockUp<Secret>() {
+            @Mock
+            Secret fromString(String data) {
+                return null;
+            }
+        };
+    }
 
-		user.setUsername("username");
-		mergeRequest.setAssignee(user);
+    @Before
+    public void before() throws Exception {
 
-		new NonStrictExpectations() {{
-        trigger.getAssigneeFilter(); result = "";
-        trigger.getTagFilter(); result = "";
-    }};
+        user.setUsername("username");
+        mergeRequest.setAssignee(user);
 
-	}
+        new NonStrictExpectations() {{
+            trigger.getAssigneeFilter();
+            result = "";
+            trigger.getTagFilter();
+            result = "";
+        }};
 
-	@Test
-  public void build() throws IOException {
+    }
 
-		subject.build(cause, new HashMap<String, String>(), project, mergeRequest);
+    @Test
+    public void build() throws IOException {
 
-		new Verifications() {{
-			trigger.startJob((GitlabCause) any);
-		}};
-	}
+        subject.build(cause, new HashMap<String, String>(), project, mergeRequest);
 
-	@Test
-  public void doesNotBuild_branchPattern() throws IOException {
+        new Verifications() {{
+            trigger.startJob((GitlabCause) any);
+        }};
+    }
 
-		new NonStrictExpectations() {{
-        trigger.getTargetBranchRegex(); result = "thisisafakepattern";
-    }};
+    @Test
+    public void doesNotBuild_branchPattern() throws IOException {
 
-		subject.build(cause, new HashMap<String, String>(), project, mergeRequest);
+        new NonStrictExpectations() {{
+            trigger.getTargetBranchRegex();
+            result = "thisisafakepattern";
+        }};
 
-		new Verifications() {{
-			trigger.startJob((GitlabCause) any); times = 0;
-		}};
-	}
+        subject.build(cause, new HashMap<String, String>(), project, mergeRequest);
 
-	@Test
-  public void doesNotBuild_hasCommitStatus() throws IOException {
+        new Verifications() {{
+            trigger.startJob((GitlabCause) any);
+            times = 0;
+        }};
+    }
 
-		new NonStrictExpectations() {{
-        api.getCommitStatuses(project, cause.getLastCommitId()); result = statuses;
-    }};
+    @Test
+    public void doesNotBuild_hasCommitStatus() throws IOException {
 
-		subject.build(cause, new HashMap<String, String>(), project, mergeRequest);
+        new NonStrictExpectations() {{
+            api.getCommitStatuses(project, cause.getLastCommitId());
+            result = statuses;
+        }};
 
-		new Verifications() {{
-			trigger.startJob((GitlabCause) any); times = 0;
-		}};
-	}
+        subject.build(cause, new HashMap<String, String>(), project, mergeRequest);
 
-	@Test
-  public void doesNotBuild_notMatchingAssigneeFilter() throws IOException {
+        new Verifications() {{
+            trigger.startJob((GitlabCause) any);
+            times = 0;
+        }};
+    }
 
-		new NonStrictExpectations() {{
-			trigger.getAssigneeFilter(); result = "jenkins";
-    }};
+    @Test
+    public void doesNotBuild_notMatchingAssigneeFilter() throws IOException {
 
-		subject.build(cause, new HashMap<String, String>(), project, mergeRequest);
+        new NonStrictExpectations() {{
+            trigger.getAssigneeFilter();
+            result = "jenkins";
+        }};
 
-		new Verifications() {{
-			trigger.startJob((GitlabCause) any); times = 0;
-		}};
-	}
+        subject.build(cause, new HashMap<String, String>(), project, mergeRequest);
 
-	@Test
-  public void doesNotBuild_notMatchingTagFilter() throws IOException {
+        new Verifications() {{
+            trigger.startJob((GitlabCause) any);
+            times = 0;
+        }};
+    }
 
-		new NonStrictExpectations() {{
-			trigger.getTagFilter(); result = "Build";
-     }};
+    @Test
+    public void doesNotBuild_notMatchingTagFilter() throws IOException {
 
-		subject.build(cause, new HashMap<String, String>(), project, mergeRequest);
+        new NonStrictExpectations() {{
+            trigger.getTagFilter();
+            result = "Build";
+        }};
 
-		new Verifications() {{
-			trigger.startJob((GitlabCause) any); times = 0;
-		}};
-	}
+        subject.build(cause, new HashMap<String, String>(), project, mergeRequest);
+
+        new Verifications() {{
+            trigger.startJob((GitlabCause) any);
+            times = 0;
+        }};
+    }
+
+    @Test
+    public void onStart_notMuted(@Mocked final AbstractBuild build) {
+
+        new NonStrictExpectations(subject) {{
+            invoke(subject, "getCause", (AbstractBuild) build);
+            result = cause;
+
+            invoke(subject, "getRootUrl");
+            result = "http://git.example.com";
+
+            invoke(subject, "isPublishBuildProgressMessages");
+            result = true;
+        }};
+
+        subject.onStarted(build);
+
+        new Verifications() {{
+            repository.createNote(anyInt, anyString, anyBoolean, anyBoolean);
+            times = 1;
+        }};
+    }
+
+    @Test
+    public void onStart_muted(@Mocked final AbstractBuild build) {
+
+        new NonStrictExpectations(subject) {{
+            invoke(subject, "getCause", (AbstractBuild) build);
+            result = cause;
+
+            invoke(subject, "getRootUrl");
+            result = "http://git.example.com";
+
+            invoke(subject, "isPublishBuildProgressMessages");
+            result = false;
+        }};
+
+        subject.onStarted(build);
+
+        new Verifications() {{
+            repository.createNote(anyInt, anyString, anyBoolean, anyBoolean);
+            times = 0;
+        }};
+    }
+
+    @Test
+    public void onCompleted_notMuted(@Mocked final AbstractBuild build) {
+
+        new NonStrictExpectations(subject) {{
+            invoke(subject, "getCause", (AbstractBuild) build);
+            result = cause;
+
+            invoke(subject, "getResult", (AbstractBuild) build);
+            result = Result.SUCCESS;
+
+            invoke(subject, "getRootUrl");
+            result = "http://git.example.com";
+
+            invoke(subject, "isPublishBuildProgressMessages");
+            result = true;
+        }};
+
+        subject.onCompleted(build);
+
+        new Verifications() {{
+            repository.createNote(anyInt, anyString, anyBoolean, anyBoolean);
+            times = 1;
+        }};
+    }
+
+    @Test
+    public void onCompleted_muted(@Mocked final AbstractBuild build) {
+
+        new NonStrictExpectations(subject) {{
+            invoke(subject, "getCause", (AbstractBuild) build);
+            result = cause;
+
+            invoke(subject, "getResult", (AbstractBuild) build);
+            result = Result.SUCCESS;
+
+            invoke(subject, "getRootUrl");
+            result = "http://git.example.com";
+
+            invoke(subject, "isPublishBuildProgressMessages");
+            result = false;
+        }};
+
+        subject.onCompleted(build);
+
+        new Verifications() {{
+            repository.createNote(anyInt, anyString, anyBoolean, anyBoolean);
+            times = 0;
+        }};
+    }
+
+    @Test
+    public void onCompleted_mutedButBuildFailed(@Mocked final AbstractBuild build) {
+
+        new NonStrictExpectations(subject) {{
+            invoke(subject, "getCause", (AbstractBuild) build);
+            result = cause;
+
+            invoke(subject, "getResult", (AbstractBuild) build);
+            result = Result.FAILURE;
+
+            invoke(subject, "getRootUrl");
+            result = "http://git.example.com";
+
+            invoke(subject, "isPublishBuildProgressMessages");
+            result = false;
+        }};
+
+        subject.onCompleted(build);
+
+        new Verifications() {{
+            repository.createNote(anyInt, anyString, anyBoolean, anyBoolean);
+            times = 1;
+        }};
+    }
 
 }

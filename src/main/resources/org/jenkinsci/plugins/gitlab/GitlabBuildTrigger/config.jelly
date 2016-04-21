@@ -23,6 +23,10 @@
             description="Force build if this comment is the last in merge reguest.">
         <f:textbox />
     </f:entry>
+    <f:entry title="Publish Build Notes" field="publishBuildProgressMessages"
+            description="Publish build progress messages (except build failed)">
+        <f:checkbox />
+    </f:entry>
     <f:entry title="Use HTTP(s) URL" field="useHttpUrl"
             description="Use the HTTP(S) URL to fetch/clone repository">
         <f:checkbox />

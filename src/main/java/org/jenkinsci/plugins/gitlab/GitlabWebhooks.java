@@ -4,8 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import hudson.Extension;
 import hudson.model.UnprotectedRootAction;
-import hudson.model.queue.QueueTaskFuture;
-import hudson.util.IOUtils;
+import org.apache.commons.io.IOUtils;
 import org.gitlab.api.GitlabAPI;
 import org.gitlab.api.models.GitlabMergeRequest;
 import org.gitlab.api.models.GitlabProject;
@@ -87,7 +86,7 @@ public class GitlabWebhooks implements UnprotectedRootAction {
                         mergeRequestWrapper.setLatestCommitOfMergeRequest(
                                 mergeRequest.object_attributes.id.toString(),
                                 mergeRequest.object_attributes.last_commit.id);
-                        
+
                         trigger.getBuilder().getBuilds().build(cause, new HashMap<String, String>(), project, gitlabMergeRequest);
                     } else {
                         LOGGER.severe("TRIGGER is not set.");

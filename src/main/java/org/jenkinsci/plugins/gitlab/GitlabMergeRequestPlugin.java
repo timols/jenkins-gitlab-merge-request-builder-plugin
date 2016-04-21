@@ -2,9 +2,10 @@ package org.jenkinsci.plugins.gitlab;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
+
 import hudson.Plugin;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -16,7 +17,7 @@ import org.kohsuke.stapler.StaplerRequest;
 public final class GitlabMergeRequestPlugin extends Plugin {
 
     static GitlabMergeRequestPlugin get() {
-        return Hudson.getInstance().getPlugin(GitlabMergeRequestPlugin.class);
+        return Jenkins.getInstance().getPlugin(GitlabMergeRequestPlugin.class);
     }
 
     @Override
