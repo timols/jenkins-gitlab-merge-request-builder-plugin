@@ -77,13 +77,4 @@ public class GitlabMergeRequestBuilder {
             return GitlabBuildTrigger.DESCRIPTOR.isEnableBuildTriggeredMessage();
         }
     }
-
-    public boolean isPublishBuildProgressMessages() {
-        if (trigger != null) {
-            return trigger.getDescriptor().isPublishBuildProgressMessages();
-        } else {
-            return GitlabBuildTrigger.DESCRIPTOR.isPublishBuildProgressMessages();
-        }
-    }
-
 }

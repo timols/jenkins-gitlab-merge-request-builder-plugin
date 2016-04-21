@@ -22,6 +22,7 @@ import org.gitlab.api.models.GitlabMergeRequest;
 import org.gitlab.api.models.GitlabProject;
 import org.gitlab.api.models.GitlabUser;
 import org.jenkinsci.plugins.gitlab.*;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -287,4 +288,10 @@ public class GitlabBuilds_build_Test {
         }};
     }
 
+    @Test
+    public void WorkInProgressRespect()
+    {
+        Assert.assertSame(true, subject.isWorkInProgress("WIP: add some feature, which is not ready yet"));
+        Assert.assertSame(false, subject.isWorkInProgress("add some feature, which is not ready yet"));
+    }
 }

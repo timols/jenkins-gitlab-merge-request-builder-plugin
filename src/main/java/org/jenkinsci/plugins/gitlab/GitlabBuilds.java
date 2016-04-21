@@ -78,6 +78,12 @@ public class GitlabBuilds {
         }
 
         if (shouldRun) {
+            if (isWorkInProgress(mergeRequest.getTitle())) {
+                shouldRun = false;
+            }
+        }
+
+        if (shouldRun) {
             LOGGER.info("Build is supposed to run");
 
             QueueTaskFuture<?> build = trigger.startJob(cause);
@@ -89,6 +95,10 @@ public class GitlabBuilds {
             LOGGER.info("Build is not supposed to run");
             return "Build triggered. But it is not supposed to run.";
         }
+    }
+
+    public boolean isWorkInProgress(String title) {
+        return null != title && (title.startsWith("[WIP]") || title.startsWith("WIP:"));
     }
 
     /**
@@ -239,7 +249,7 @@ public class GitlabBuilds {
     }
 
     private boolean isPublishBuildProgressMessages() {
-        return trigger.getBuilder().isPublishBuildProgressMessages();
+        return trigger.getPublishBuildProgressMessages();
     }
 
     /**
