@@ -27,6 +27,10 @@
     <f:entry title="${%Enable build triggered message}" field="enableBuildTriggeredMessage">
       <f:checkbox />
     </f:entry>
+    <f:entry title="Publish Build Notes" field="publishBuildProgressMessages"
+            description="Publish build progress messages (except build failed)">
+        <f:checkbox />
+    </f:entry>
     <f:entry title="${%Default success message}" field="successMessage">
       <f:textarea default="Build finished.  Tests PASSED."/>
     </f:entry>
