@@ -30,6 +30,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
     private final String assigneeFilter;
     private final String tagFilter;
     private final String triggerComment;
+    private final boolean publishBuildProgressMessages;
     private final boolean autoCloseFailed;
     private final boolean autoMergePassed;
     transient private GitlabMergeRequestBuilder builder;
@@ -42,6 +43,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
                               String assigneeFilter,
                               String tagFilter,
                               String triggerComment,
+                              boolean publishBuildProgressMessages,
                               boolean autoCloseFailed,
                               boolean autoMergePassed) throws ANTLRException {
 
@@ -52,6 +54,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
         this.assigneeFilter = assigneeFilter;
         this.tagFilter = tagFilter;
         this.triggerComment = triggerComment;
+        this.publishBuildProgressMessages = publishBuildProgressMessages;
         this.autoCloseFailed = autoCloseFailed;
         this.autoMergePassed = autoMergePassed;
     }
@@ -170,13 +173,17 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
     public String getAssigneeFilter() {
         return assigneeFilter;
     }
-    
+
     public String getTagFilter() {
-		return tagFilter;
-	}
+        return tagFilter;
+    }
 
     public String getTriggerComment() {
         return triggerComment;
+    }
+
+    public boolean getPublishBuildProgressMessages() {
+        return publishBuildProgressMessages;
     }
 
     public boolean getAutoCloseFailed() {
@@ -200,6 +207,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
         private Secret botApiTokenSecret;
         private String cron = "H/5 * * * *";
         private boolean enableBuildTriggeredMessage = true;
+        private boolean publishBuildProgressMessages = true;
         private String successMessage = "Build finished.  Tests PASSED.";
         private String unstableMessage = "Build finished.  Tests FAILED.";
         private String failureMessage = "Build finished.  Tests FAILED.";
@@ -237,6 +245,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
             cron = formData.getString("cron");
             assigneeFilter = formData.getString("assigneeFilter");
             tagFilter = formData.getString("tagFilter");
+            publishBuildProgressMessages = formData.getBoolean("publishBuildProgressMessages");
             enableBuildTriggeredMessage = formData.getBoolean("enableBuildTriggeredMessage");
             successMessage = formData.getString("successMessage");
             unstableMessage = formData.getString("unstableMessage");
@@ -281,12 +290,12 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
         public String getAssigneeFilter() {
             return assigneeFilter;
         }
-        
-        public String getTagFilter() {
-			return tagFilter;
-		}
 
-		public boolean isEnableBuildTriggeredMessage() {
+        public String getTagFilter() {
+            return tagFilter;
+        }
+
+        public boolean isEnableBuildTriggeredMessage() {
             return enableBuildTriggeredMessage;
         }
 
@@ -322,7 +331,11 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
             return ignoreCertificateErrors;
         }
 
-		public Map<Integer, GitlabMergeRequestWrapper> getMergeRequests(String projectName) {
+        public boolean isPublishBuildProgressMessages() {
+            return publishBuildProgressMessages;
+        }
+
+        public Map<Integer, GitlabMergeRequestWrapper> getMergeRequests(String projectName) {
             Map<Integer, GitlabMergeRequestWrapper> result;
 
             if (jobs.containsKey(projectName)) {

@@ -2,7 +2,7 @@ buildscript {
 	repositories {
 		jcenter()
 		maven {
-			url = 'http://repo.jenkins-ci.org/releases/'
+			url = 'http://repo.jenkins-ci.org/public/'
 		}
 	}
 	dependencies {
@@ -41,7 +41,7 @@ repositories {
 	mavenLocal()
 	mavenCentral()
 	maven {
-		url = 'http://repo.jenkins-ci.org/releases/'
+		url = 'http://repo.jenkins-ci.org/public/'
 	}
 }
 

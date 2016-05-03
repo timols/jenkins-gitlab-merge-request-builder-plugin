@@ -1,5 +1,6 @@
 package com.jenkinsci.plugins.gitlab;
 
+import hudson.model.AbstractBuild;
 import hudson.util.Secret;
 import mockit.Injectable;
 import mockit.Mock;
@@ -13,10 +14,7 @@ import org.gitlab.api.models.GitlabMergeRequest;
 import org.gitlab.api.models.GitlabNote;
 import org.gitlab.api.models.GitlabProject;
 import org.gitlab.api.models.GitlabUser;
-import org.jenkinsci.plugins.gitlab.GitlabBuildTrigger;
-import org.jenkinsci.plugins.gitlab.GitlabMergeRequestBuilder;
-import org.jenkinsci.plugins.gitlab.GitlabMergeRequestStatus;
-import org.jenkinsci.plugins.gitlab.GitlabMergeRequestWrapper;
+import org.jenkinsci.plugins.gitlab.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;

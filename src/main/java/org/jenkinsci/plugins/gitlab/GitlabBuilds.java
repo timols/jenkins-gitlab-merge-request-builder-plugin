@@ -37,22 +37,22 @@ public class GitlabBuilds {
     }
 
     public String build(GitlabCause cause, Map<String, String> customParameters, GitlabProject project, GitlabMergeRequest mergeRequest) throws IOException {
-    	
-    	boolean shouldRun = true;
-    	GitlabAPI api = trigger.getBuilder().getGitlab().get();
+
+        boolean shouldRun = true;
+        GitlabAPI api = trigger.getBuilder().getGitlab().get();
         String triggerComment = trigger.getTriggerComment();
         GitlabNote lastNote = getLastNote(mergeRequest, api);
-    	
-    	if (isAllowedByTargetBranchRegex(cause.getTargetBranch())) {
+
+        if (isAllowedByTargetBranchRegex(cause.getTargetBranch())) {
             LOGGER.log(Level.INFO, "The target regex matches the target branch {" + cause.getTargetBranch() + "}. Source branch {" + cause.getSourceBranch() + "}");
             shouldRun = true;
         } else {
             LOGGER.log(Level.INFO, "The target regex did not match the target branch {" + cause.getTargetBranch() + "}. Not triggering this job. Source branch {" + cause.getSourceBranch() + "}");
             shouldRun = false;
         }
-    	
-    	if (hasCommitStatus(project, cause.getLastCommitId(), api)) {
-        	shouldRun = false;
+
+        if (hasCommitStatus(project, cause.getLastCommitId(), api)) {
+            shouldRun = false;
         }
 
         if (lastNote != null && lastNote.getBody().equals(triggerComment)) {
@@ -60,42 +60,52 @@ public class GitlabBuilds {
             shouldRun = true;
         }
 
-    	if (shouldRun) {
-    		String assigneeFilter = trigger.getAssigneeFilter();
-    		
-    		if (!"".equals(assigneeFilter)) {
-    			String assigneeName = mergeRequest.getAssignee() != null ? mergeRequest.getAssignee().getUsername() : null;
-    			shouldRun = filterMatch(assigneeFilter, assigneeName, "Assignee");
-    		}
+        if (shouldRun) {
+            String assigneeFilter = trigger.getAssigneeFilter();
+
+            if (!"".equals(assigneeFilter)) {
+                String assigneeName = mergeRequest.getAssignee() != null ? mergeRequest.getAssignee().getUsername() : null;
+                shouldRun = filterMatch(assigneeFilter, assigneeName, "Assignee");
+            }
         }
-    	
-    	if (shouldRun) {
-    		String tagFilter = trigger.getTagFilter();
-    		
-    		if (!"".equals(tagFilter)) {
-    			shouldRun = filterMatch(tagFilter, mergeRequest.getLabels(), "Labels");
-    		}
+
+        if (shouldRun) {
+            String tagFilter = trigger.getTagFilter();
+
+            if (!"".equals(tagFilter)) {
+                shouldRun = filterMatch(tagFilter, mergeRequest.getLabels(), "Labels");
+            }
         }
-    	
-    	if (shouldRun == true) {
-    		LOGGER.info("Build is supposed to run");
-    		
-	    	QueueTaskFuture<?> build = trigger.startJob(cause);
-	        if (build == null) {
-	            LOGGER.log(Level.SEVERE, "Job failed to start.");
-	        }
-	        return withCustomParameters(new StringBuilder("Build triggered."), customParameters).toString();
-    	} else {
-    		LOGGER.info("Build is not supposed to run");
-    		return "Build triggered. But it is not supposed to run.";
-    	}
+
+        if (shouldRun) {
+            if (isWorkInProgress(mergeRequest.getTitle())) {
+                shouldRun = false;
+            }
+        }
+
+        if (shouldRun) {
+            LOGGER.info("Build is supposed to run");
+
+            QueueTaskFuture<?> build = trigger.startJob(cause);
+            if (build == null) {
+                LOGGER.log(Level.SEVERE, "Job failed to start.");
+            }
+            return withCustomParameters(new StringBuilder("Build triggered."), customParameters).toString();
+        } else {
+            LOGGER.info("Build is not supposed to run");
+            return "Build triggered. But it is not supposed to run.";
+        }
     }
-    
+
+    public boolean isWorkInProgress(String title) {
+        return null != title && (title.startsWith("[WIP]") || title.startsWith("WIP:"));
+    }
+
     /**
      * Check whether the branchName can be matched using the target branch
      * regex. Empty regex patterns will cause this method to return true.
      *
-     * @param branchName
+     * @param branchName String
      * @return true when the name can be matched or when the regex is empty.
      * Otherwise false.
      */
@@ -108,34 +118,33 @@ public class GitlabBuilds {
         Pattern pattern = Pattern.compile(regex);
         return pattern.matcher(branchName).matches();
     }
-    
+
     /**
-     * 
      * synchronized so that there can't be a race condition here.
-     * 
-     * @param project
-     * @param commitHash
-     * @param api
+     *
+     * @param project GitlabProject
+     * @param commitHash String
+     * @param api GitlabAPI
      * @return
-     * @throws IOException 
+     * @throws IOException
      */
     private synchronized boolean hasCommitStatus(GitlabProject project, String commitHash, GitlabAPI api) throws IOException {
-    	try {
-    		List<GitlabCommitStatus> statuses = api.getCommitStatuses(project, commitHash);
-    		
-    		for (GitlabCommitStatus status : statuses) {
-    			LOGGER.fine("Status of " + commitHash + " -> " + status.getStatus());
-    		}
-    		
-    		// Return true if there are some statuses
-    		return !statuses.isEmpty();
-    		
-		} catch (FileNotFoundException ex) {
-			// Can ignore this one because it just means that there is no status for a commit
-		}
-    	
-    	
-    	return false;
+        try {
+            List<GitlabCommitStatus> statuses = api.getCommitStatuses(project, commitHash);
+
+            for (GitlabCommitStatus status : statuses) {
+                LOGGER.fine("Status of " + commitHash + " -> " + status.getStatus());
+            }
+
+            // Return true if there are some statuses
+            return !statuses.isEmpty();
+
+        } catch (FileNotFoundException ex) {
+            // Can ignore this one because it just means that there is no status for a commit
+        }
+
+
+        return false;
     }
 
     private GitlabNote getLastNote(GitlabMergeRequest gitlabMergeRequest, GitlabAPI api) throws IOException {
@@ -160,15 +169,15 @@ public class GitlabBuilds {
         });
         return notes;
     }
-    
+
     private boolean filterMatch(String filter, String target, String type) {
         boolean shouldRun = true;
         if ("".equals(filter)) {
             shouldRun = true;
         } else {
-        	if (target == null)
-        		return false;
-        	
+            if (target == null)
+                return false;
+
             if (target.equals(filter)) {
                 shouldRun = true;
             } else {
@@ -178,21 +187,21 @@ public class GitlabBuilds {
         }
         return shouldRun;
     }
-    
+
     private boolean filterMatch(String filter, String target[], String type) {
         boolean shouldRun = false;
         if ("".equals(filter)) {
             shouldRun = true;
         } else {
-        	if (target == null)
-        		return false;
-        	
-        	for (String test : target) {
-        		if (test.equals(filter)) {
+            if (target == null)
+                return false;
+
+            for (String test : target) {
+                if (test.equals(filter)) {
                     shouldRun = true;
                 }
-        	}
-        	
+            }
+
             if (!shouldRun) {
                 LOGGER.info(type + ": " + Arrays.toString(target) + " does not contain " + filter);
             }
@@ -227,7 +236,26 @@ public class GitlabBuilds {
         return (GitlabCause) cause;
     }
 
+    private Result getResult(AbstractBuild build) {
+        return build.getResult();
+    }
 
+    private String getRootUrl() {
+        return Jenkins.getInstance().getRootUrl();
+    }
+
+    private boolean isEnableBuildTriggeredMessage() {
+        return trigger.getBuilder().isEnableBuildTriggeredMessage();
+    }
+
+    private boolean isPublishBuildProgressMessages() {
+        return trigger.getPublishBuildProgressMessages();
+    }
+
+    /**
+     *
+     * @param build AbstractBuild
+     */
     public void onStarted(AbstractBuild build) {
         GitlabCause cause = getCause(build);
 
@@ -241,15 +269,18 @@ public class GitlabBuilds {
             LOGGER.log(Level.SEVERE, "Can't update build description", e);
         }
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("Build Started: ");
-        String url = Jenkins.getInstance().getRootUrl() + build.getUrl();
-        sb.append("[").append(url).append("](").append(url).append(")");
-        repository.createNote(cause.getMergeRequestId(), sb.toString(), false, false);
+        String url = getRootUrl() + build.getUrl();
+
+        if (isPublishBuildProgressMessages()) {
+            repository.createNote(cause.getMergeRequestId(), "Build Started: " + "[" + url + "](" + url + ")", false, false);
+        }
 
         repository.changeCommitStatus(cause.getMergeRequestId(), cause.getLastCommitId(), "running", url);
     }
 
+    /**
+     * @param build AbstractBuild
+     */
     public void onCompleted(AbstractBuild build) {
         GitlabCause cause = getCause(build);
 
@@ -259,14 +290,16 @@ public class GitlabBuilds {
 
         boolean stable = false;
         StringBuilder stringBuilder = new StringBuilder();
-        if (build.getResult() == Result.SUCCESS) {
+        Result result = getResult(build);
+
+        if (result == Result.SUCCESS) {
             stable = true;
             if (build.getBuildVariables().containsKey("gitlabSuccessMessage")) {
                 stringBuilder.append(build.getBuildVariables().get("gitlabSuccessMessage"));
             } else {
                 stringBuilder.append(trigger.getDescriptor().getSuccessMessage());
             }
-        } else if (build.getResult() == Result.UNSTABLE) {
+        } else if (result == Result.UNSTABLE) {
             if (build.getBuildVariables().containsKey("gitlabUnstableMessage")) {
                 stringBuilder.append(build.getBuildVariables().get("gitlabUnstableMessage"));
             } else {
@@ -280,13 +313,18 @@ public class GitlabBuilds {
             }
         }
 
-        if (!trigger.getBuilder().isEnableBuildTriggeredMessage()) {
+        if (!isEnableBuildTriggeredMessage()) {
             withCustomParameters(stringBuilder, cause.getCustomParameters());
         }
 
-        String buildUrl = Jenkins.getInstance().getRootUrl() + build.getUrl();
-        stringBuilder.append("\nBuild results available at: ")
-                .append("[").append(buildUrl).append("](").append(buildUrl).append(")"); // Link in markdown format
+        String buildUrl = getRootUrl() + build.getUrl();
+        stringBuilder
+                .append("\nBuild results available at: ")
+                .append("[")
+                .append(buildUrl)
+                .append("](")
+                .append(buildUrl)
+                .append(")"); // Link in markdown format
 
         boolean shouldClose = false;
         if (!stable && trigger.getAutoCloseFailed()) {
@@ -298,9 +336,11 @@ public class GitlabBuilds {
             shouldMerge = true;
         }
 
-        repository.createNote(cause.getMergeRequestId(), stringBuilder.toString(), shouldClose, shouldMerge);
+        if (isPublishBuildProgressMessages() || !stable) {
+            repository.createNote(cause.getMergeRequestId(), stringBuilder.toString(), shouldClose, shouldMerge);
+        }
 
-        String status = (build.getResult() == Result.SUCCESS) ? "success" : "failed";
+        String status = (result == Result.SUCCESS) ? "success" : "failed";
         repository.changeCommitStatus(cause.getMergeRequestId(), cause.getLastCommitId(), status, buildUrl);
     }
 
