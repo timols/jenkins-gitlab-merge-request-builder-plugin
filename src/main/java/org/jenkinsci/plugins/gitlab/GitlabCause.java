@@ -12,6 +12,7 @@ public class GitlabCause extends Cause {
     private final String sourceBranch;
     private final String targetBranch;
     private final Map<String, String> customParameters;
+    private final String title;
     private final String description;
     private final Integer sourceProjectId;
     private final Integer targetProjectId;
@@ -24,6 +25,7 @@ public class GitlabCause extends Cause {
                        String sourceBranch,
                        String targetBranch,
                        Map<String, String> customParameters,
+                       String title,
                        String description,
                        Integer sourceProjectId,
                        Integer targetProjectId, 
@@ -36,6 +38,7 @@ public class GitlabCause extends Cause {
         this.sourceBranch = sourceBranch;
         this.targetBranch = targetBranch;
         this.customParameters = customParameters;
+        this.title = title;
         this.description = description;
         this.sourceProjectId = sourceProjectId;
         this.targetProjectId = targetProjectId;
@@ -75,6 +78,10 @@ public class GitlabCause extends Cause {
 
     public Map<String, String> getCustomParameters() {
         return customParameters;
+    }
+
+    public String getTitle() {
+        return title;
     }
 
     public String getDescription() {
