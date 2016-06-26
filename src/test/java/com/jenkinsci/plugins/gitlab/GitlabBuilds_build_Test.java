@@ -56,6 +56,7 @@ public class GitlabBuilds_build_Test {
             "sourceBranch",
             "targetBranch",
             new HashMap<String, String>(),
+            "title",
             "description",
             3,
             4,
