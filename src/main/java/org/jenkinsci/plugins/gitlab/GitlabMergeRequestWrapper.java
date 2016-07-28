@@ -23,8 +23,6 @@ public class GitlabMergeRequestWrapper {
     private String sourceBranch;
     private String targetBranch;
 
-    private boolean shouldRun = false;
-
     private GitlabMergeRequestStatus mergeRequestStatus;
 
     transient private GitlabProject project;
@@ -253,8 +251,6 @@ public class GitlabMergeRequestWrapper {
     }
 
     private void build(Map<String, String> customParameters, String commitHash, GitlabMergeRequest mergeRequest) {
-        shouldRun = false;
-        
         GitlabCause cause = new GitlabCause(
         		this.getId(),
         		this.getIid(),
@@ -272,7 +268,7 @@ public class GitlabMergeRequestWrapper {
 		try {
 			String message = builder.getBuilds().build(cause, customParameters, project, mergeRequest);
 			
-			if (builder.isEnableBuildTriggeredMessage()) {
+			if (builder.isEnableBuildTriggeredMessage() && StringUtils.isNotBlank(message)) {
 	            createNote(message, false, false);
 	            LOGGER.log(Level.INFO, message);
 	        }
