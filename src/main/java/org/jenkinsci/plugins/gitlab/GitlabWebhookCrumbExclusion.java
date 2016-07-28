@@ -17,7 +17,7 @@ public class GitlabWebhookCrumbExclusion extends CrumbExclusion {
 	@Override
 	public boolean process(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
 		String pathInfo = request.getPathInfo();
-		if (pathInfo != null && pathInfo.equals("/" + GitlabWebhooks.URLNAME + "/")) {
+		if (pathInfo != null && pathInfo.startsWith("/" + GitlabWebhooks.URLNAME + "/")) {
 			chain.doFilter(request, response);
 			return true;
 		}
