@@ -12,7 +12,7 @@ import org.kohsuke.stapler.StaplerRequest;
 /**
  * Gitlab Merge Request Plugin
  *
- * @author @timolsh
+ * @author timolsh
  */
 public final class GitlabMergeRequestPlugin extends Plugin {
 

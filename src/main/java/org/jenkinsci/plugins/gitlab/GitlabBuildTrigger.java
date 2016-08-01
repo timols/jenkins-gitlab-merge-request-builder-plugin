@@ -349,14 +349,6 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
             return result;
         }
 
-        /**
-         * @deprecated use {@link #getBotApiTokenSecret()}.
-         */
-        @Deprecated
-        public String getBotApiToken() {
-            return botApiTokenSecret.getPlainText();
-        }
-
         public Secret getBotApiTokenSecret() {
             return botApiTokenSecret;
         }
