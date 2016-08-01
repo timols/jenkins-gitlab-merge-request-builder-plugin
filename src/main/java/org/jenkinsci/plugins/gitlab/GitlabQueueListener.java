@@ -19,9 +19,10 @@ public class GitlabQueueListener extends QueueListener {
 			if (c instanceof GitlabCause) {
 				Gitlab gitlab = new Gitlab();
 				GitlabCause cause = (GitlabCause) c;
-				
+				Jenkins instance = Jenkins.getInstance();
+				String rootUrl = instance == null ? "/" : instance.getRootUrl();
+				String url = rootUrl + wi.getUrl();
 				try {
-					String url = Jenkins.getInstance().getRootUrl() + wi.getUrl();
 					gitlab.changeCommitStatus(cause.getTargetProjectId(), cause.getSourceBranch(), cause.getLastCommitId(), "pending", url);
 				} catch (IOException e) {
 					LOGGER.info("error trying to set pending status");

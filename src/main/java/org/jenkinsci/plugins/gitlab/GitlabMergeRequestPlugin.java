@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.gitlab;
 
+import javax.annotation.CheckForNull;
 import javax.servlet.ServletException;
 import java.io.IOException;
 
@@ -15,9 +16,10 @@ import org.kohsuke.stapler.StaplerRequest;
  * @author timolsh
  */
 public final class GitlabMergeRequestPlugin extends Plugin {
-
+    @CheckForNull
     static GitlabMergeRequestPlugin get() {
-        return Jenkins.getInstance().getPlugin(GitlabMergeRequestPlugin.class);
+        Jenkins instance = Jenkins.getInstance();
+        return instance == null ? null : instance.getPlugin(GitlabMergeRequestPlugin.class);
     }
 
     @Override
@@ -30,6 +32,5 @@ public final class GitlabMergeRequestPlugin extends Plugin {
         super.configure(req, formData);
         save();
     }
-
 }
 

@@ -96,7 +96,7 @@ public class GitlabWebhooks implements UnprotectedRootAction {
                 }
             }
 
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             LOGGER.severe("There was an error");
             LOGGER.throwing("GitlabWebhooks", "doStart", ex);
         }

@@ -93,19 +93,24 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
         }
 
         List<ParameterValue> listValues = new ArrayList<>(values.values());
-        return job.scheduleBuild2(0, cause, new ParametersAction(listValues));
+        if (job == null) {
+            return null;
+        } else {
+            return job.scheduleBuild2(0, cause, new ParametersAction(listValues));
+        }
     }
 
     private Map<String, ParameterValue> getDefaultParameters() {
         Map<String, ParameterValue> values = new HashMap<>();
-        ParametersDefinitionProperty definitionProperty = job.getProperty(ParametersDefinitionProperty.class);
+        if (job != null) {
+            ParametersDefinitionProperty definitionProperty = job.getProperty(ParametersDefinitionProperty.class);
 
-        if (definitionProperty != null) {
-            for (ParameterDefinition definition : definitionProperty.getParameterDefinitions()) {
-                values.put(definition.getName(), definition.getDefaultParameterValue());
+            if (definitionProperty != null) {
+                for (ParameterDefinition definition : definitionProperty.getParameterDefinitions()) {
+                    values.put(definition.getName(), definition.getDefaultParameterValue());
+                }
             }
         }
-
         return values;
     }
 
