@@ -13,3 +13,4 @@ work/*
 .gradle
 build/
 classes/
+.factorypath
