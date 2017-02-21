@@ -241,7 +241,8 @@ public class GitlabBuilds {
     }
 
     private String getRootUrl() {
-        return Jenkins.getInstance().getRootUrl();
+        Jenkins instance = Jenkins.getInstance();
+        return instance == null ? "" : instance.getRootUrl();
     }
 
     private boolean isEnableBuildTriggeredMessage() {
