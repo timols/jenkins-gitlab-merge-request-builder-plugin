@@ -84,6 +84,22 @@ These include:
 __Note:__  a manually triggered build will not add build triggered/succeeded/failed comments to the merge request.
 __Note:__  You should ensure that the 'Global Config user.name Value' and 'Global Config user.email Value' are both set for your git plugin.  In some cases, you will get an error indicating that a branch cannot be merged if these are not set.
 
+## Environment variables
+
+The plugin will contribute some environment variables to the build.
+
+* **gitlabMergeRequestId**
+* **gitlabMergeRequestIid**
+* **gitlabSourceName**
+* **gitlabSourceRepository**
+* **gitlabSourceBranch**
+* **gitlabTargetBranch**
+* **gitlabTitle**
+* **gitlabDescription**
+* **gitlabSourceProjectId**
+* **gitlabTargetProjectId**
+* **gitlabLastCommitId**
+
 ## Contributing
 
 * Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet
