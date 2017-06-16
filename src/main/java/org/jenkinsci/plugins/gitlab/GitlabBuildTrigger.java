@@ -9,6 +9,7 @@ import hudson.triggers.TriggerDescriptor;
 import hudson.util.FormValidation;
 import hudson.util.Secret;
 import net.sf.json.JSONObject;
+import org.jenkinsci.plugins.gitlab.models.webhook.MergeRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -19,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
 
@@ -62,7 +65,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
     @Override
     public void start(AbstractProject<?, ?> project, boolean newInstance) {
         try {
-            GitlabWebhooks.setTrigger(this);
+            GitlabWebhooks.addTrigger(this);
 
             builder = GitlabMergeRequestBuilder.getBuilder()
                     .setProject(project)
@@ -202,6 +205,15 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
 
     @Extension
     public static final GitlabBuildTriggerDescriptor DESCRIPTOR = new GitlabBuildTriggerDescriptor();
+
+    /**
+     *
+     * @param mergeRequest
+     * @return true if target repo of mergeRequest related to this trigger
+     */
+    public boolean checkMergeRequest(MergeRequest mergeRequest) {
+        return this.projectPath.equals(mergeRequest.object_attributes.target.path_with_namespace);
+    }
 
     public static final class GitlabBuildTriggerDescriptor extends TriggerDescriptor {
         private String botUsername = "jenkins";
