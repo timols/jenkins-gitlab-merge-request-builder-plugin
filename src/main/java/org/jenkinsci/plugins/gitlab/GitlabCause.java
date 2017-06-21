@@ -1,7 +1,9 @@
 package org.jenkinsci.plugins.gitlab;
 
 import hudson.model.Cause;
+import org.jenkinsci.plugins.gitlab.models.webhook.MergeRequest;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class GitlabCause extends Cause {
@@ -44,7 +46,20 @@ public class GitlabCause extends Cause {
         this.targetProjectId = targetProjectId;
         this.lastCommitId = lastCommitId;
     }
-
+    public GitlabCause(MergeRequest m, HashMap<String, String> params) {
+        this.mergeRequestId = m.getId();
+        this.mergeRequestIid = m.getIid();
+        this.sourceName = m.getSource().name;
+        this.sourceRepository = m.getSource().http_url;
+        this.sourceBranch = m.getSource_branch();
+        this.targetBranch = m.getTarget_branch();
+        this.customParameters = params;
+        this.title = m.getTitle();
+        this.description = m.getDescription();
+        this.sourceProjectId = m.getSource_project_id();
+        this.targetProjectId = m.getTarget_project_id();
+        this.lastCommitId = m.getLast_commit().id;
+    }
 
     @Override
     public String getShortDescription() {
@@ -100,4 +115,7 @@ public class GitlabCause extends Cause {
         return lastCommitId;
     }
 
+//    public static GitlabCause fromMergeRequest(MergeRequest mergeRequest) {
+//
+//    }
 }

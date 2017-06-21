@@ -206,15 +206,6 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
     @Extension
     public static final GitlabBuildTriggerDescriptor DESCRIPTOR = new GitlabBuildTriggerDescriptor();
 
-    /**
-     *
-     * @param mergeRequest
-     * @return true if target repo of mergeRequest related to this trigger
-     */
-    public boolean checkMergeRequest(MergeRequest mergeRequest) {
-        return this.projectPath.equals(mergeRequest.object_attributes.target.path_with_namespace);
-    }
-
     public static final class GitlabBuildTriggerDescriptor extends TriggerDescriptor {
         private String botUsername = "jenkins";
         private String gitlabHostUrl;
