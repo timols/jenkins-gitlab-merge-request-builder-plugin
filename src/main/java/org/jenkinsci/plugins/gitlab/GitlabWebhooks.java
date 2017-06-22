@@ -30,10 +30,10 @@ public class GitlabWebhooks implements UnprotectedRootAction {
     public static final String URLNAME = "gitlab-webhook";
 
     /**
-     * @param trigger
+     * @param t
      */
-    public static void addTrigger(GitlabBuildTrigger trigger) {
-        triggers.add(trigger);
+    public static void addTrigger(GitlabBuildTrigger t) {
+        triggers.add(t);
     }
 
     /**
@@ -42,8 +42,12 @@ public class GitlabWebhooks implements UnprotectedRootAction {
      */
     private static GitlabBuildTrigger findTrigger(MergeRequest m) {
         for (GitlabBuildTrigger t : triggers) {
-            if (t.getProjectPath().equals(m.getTarget().path_with_namespace)) {
-                return t;
+            try {
+                if (t.getProjectPath().equals(m.getTarget().path_with_namespace)) {
+                    return t;
+                }
+            } catch (NullPointerException npe) {
+                LOGGER.warning(String.format("%s where handle %s", npe.toString(), m.toString()));
             }
         }
         return null;
@@ -60,7 +64,7 @@ public class GitlabWebhooks implements UnprotectedRootAction {
             String requestBodyString = IOUtils.toString(request.getInputStream(), "UTF-8");
             LOGGER.fine(requestBodyString);
             OnlyType hookObjectKind = OnlyType.fromJson(requestBodyString);
-            MergeRequest mergeRequest = new MergeRequest();
+            MergeRequest mergeRequest = null;
             switch (hookObjectKind.object_kind) {
                 case "note":
                     Note mergeRequestNote = Note.fromJson(requestBodyString);
@@ -71,8 +75,8 @@ public class GitlabWebhooks implements UnprotectedRootAction {
                     break;
                 default: {}
             }
-            LOGGER.fine(mergeRequest.toString());
-            GitlabBuildTrigger trigger = GitlabWebhooks.findTrigger(mergeRequest);
+            LOGGER.fine(String.format("MergeRequest is %s", mergeRequest));
+            GitlabBuildTrigger trigger  = mergeRequest != null ? findTrigger(mergeRequest) : null;
             if (trigger != null) {
                 GitlabCause cause = new GitlabCause(mergeRequest, new HashMap<String, String>());
                 GitlabAPI api = trigger.getBuilder().getGitlab().get();
@@ -93,6 +97,8 @@ public class GitlabWebhooks implements UnprotectedRootAction {
                         mergeRequest.getLast_commit().id);
                 LOGGER.info(String.format("Webhook detected! Trying to build %s", mergeRequest.toString()));
                 currentBuilder.getBuilds().build(cause, new HashMap<String, String>(), project, gitlabMergeRequest);
+            } else {
+                LOGGER.info(String.format("No suitable trigger found for MergeRequest %s! Skipping webhook", mergeRequest));
             }
 
         } catch (IOException ex) {
@@ -100,6 +106,8 @@ public class GitlabWebhooks implements UnprotectedRootAction {
             LOGGER.throwing("GitlabWebhooks", "doStart", ex);
         } catch (JsonSyntaxException e) {
             LOGGER.warning(e.toString());
+        } catch (Exception e) {
+            LOGGER.severe(String.format("%s on run doStart", e));
         }
         return response;
     }

@@ -25,9 +25,7 @@ public class MergeRequest {
 
     @Override
     public String toString() {
-        return "MergeRequest{" +
-                "object_attributes=" + object_attributes +
-                '}';
+        return String.format("MergeRequest: id %s, iid %s, target %s", this.getId(), this.getIid(), this.getTarget());
     }
 
     public static MergeRequest fromJson(String jsonString) throws JsonSyntaxException {
