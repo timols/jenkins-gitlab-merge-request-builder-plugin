@@ -14,7 +14,6 @@ import org.kohsuke.stapler.*;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -26,14 +25,18 @@ import java.util.logging.Logger;
 public class GitlabWebhooks implements UnprotectedRootAction {
 
     private static final Logger LOGGER = Logger.getLogger(GitlabWebhooks.class.getName());
-    private static ArrayList<GitlabBuildTrigger> triggers = new ArrayList<GitlabBuildTrigger>();
+    private static HashMap<String, GitlabBuildTrigger> triggers = new HashMap<String, GitlabBuildTrigger>();
     public static final String URLNAME = "gitlab-webhook";
 
     /**
      * @param t
      */
     public static void addTrigger(GitlabBuildTrigger t) {
-        triggers.add(t);
+        String key = t.getProjectPath();
+        if (triggers.containsKey(key)) {
+            triggers.remove(key);
+        }
+        triggers.put(key, t);
     }
 
     /**
@@ -41,7 +44,8 @@ public class GitlabWebhooks implements UnprotectedRootAction {
      * @return
      */
     private static GitlabBuildTrigger findTrigger(MergeRequest m) {
-        for (GitlabBuildTrigger t : triggers) {
+        for (String key : triggers.keySet()) {
+            GitlabBuildTrigger t = triggers.get(key);
             try {
                 if (t.getProjectPath().equals(m.getTarget().path_with_namespace)) {
                     return t;
@@ -78,12 +82,11 @@ public class GitlabWebhooks implements UnprotectedRootAction {
             LOGGER.fine(String.format("MergeRequest is %s", mergeRequest));
             GitlabBuildTrigger trigger  = mergeRequest != null ? findTrigger(mergeRequest) : null;
             if (trigger != null) {
-                GitlabCause cause = new GitlabCause(mergeRequest, new HashMap<String, String>());
-                GitlabAPI api = trigger.getBuilder().getGitlab().get();
-                GitlabProject project = api.getProject(cause.getTargetProjectId());
-                GitlabMergeRequest gitlabMergeRequest = api.getMergeRequest(project, cause.getMergeRequestId());
-                GitlabMergeRequestWrapper mergeRequestWrapper;
                 GitlabMergeRequestBuilder currentBuilder = trigger.getBuilder();
+                GitlabAPI api = currentBuilder.getGitlab().get();
+                GitlabProject project = api.getProject(mergeRequest.getTarget_project_id());
+                GitlabMergeRequest gitlabMergeRequest = api.getMergeRequest(project, mergeRequest.getId());
+                GitlabMergeRequestWrapper mergeRequestWrapper;
                 Map<Integer, GitlabMergeRequestWrapper> mergeRequestWrapperMap = currentBuilder.getMergeRequests();
 
                 if (mergeRequestWrapperMap.containsKey(mergeRequest.getId())) {
@@ -96,7 +99,7 @@ public class GitlabWebhooks implements UnprotectedRootAction {
                         mergeRequest.getId().toString(),
                         mergeRequest.getLast_commit().id);
                 LOGGER.info(String.format("Webhook detected! Trying to build %s", mergeRequest.toString()));
-                currentBuilder.getBuilds().build(cause, new HashMap<String, String>(), project, gitlabMergeRequest);
+                mergeRequestWrapper.check(gitlabMergeRequest);
             } else {
                 LOGGER.info(String.format("No suitable trigger found for MergeRequest %s! Skipping webhook", mergeRequest));
             }

@@ -43,15 +43,6 @@ public class MergeRequest {
         return result;
     }
 
-    public String getTarget_branch() {
-        String result = this.target_branch != null ? this.target_branch : this.object_attributes.target_branch;
-        return result;
-    }
-    public String getSource_branch() {
-        String result = this.source_branch != null ? this.source_branch : this.object_attributes.source_branch;
-        return result;
-    }
-
     public MergeRequestRepository getSource() {
         MergeRequestRepository result = this.source != null ? this.source : this.object_attributes.source;
         return result;
@@ -77,10 +68,6 @@ public class MergeRequest {
         return result;
     }
 
-    public Integer getSource_project_id() {
-        Integer result = this.source_project_id != null ? this.source_project_id : this.object_attributes.source_project_id;
-        return result;
-    }
     public Integer getTarget_project_id() {
         Integer result = this.target_project_id != null ? this.target_project_id : this.object_attributes.target_project_id;
         return result;
