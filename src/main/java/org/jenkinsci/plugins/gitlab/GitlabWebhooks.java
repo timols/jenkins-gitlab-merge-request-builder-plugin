@@ -1,7 +1,6 @@
 package org.jenkinsci.plugins.gitlab;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
 import hudson.Extension;
 import hudson.model.UnprotectedRootAction;
 import org.apache.commons.io.IOUtils;
@@ -9,12 +8,14 @@ import org.gitlab.api.GitlabAPI;
 import org.gitlab.api.models.GitlabMergeRequest;
 import org.gitlab.api.models.GitlabProject;
 import org.jenkinsci.plugins.gitlab.models.webhook.MergeRequest;
+import org.jenkinsci.plugins.gitlab.models.webhook.Note;
 import org.jenkinsci.plugins.gitlab.models.webhook.OnlyType;
 import org.kohsuke.stapler.*;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -24,83 +25,93 @@ import java.util.logging.Logger;
 public class GitlabWebhooks implements UnprotectedRootAction {
 
     private static final Logger LOGGER = Logger.getLogger(GitlabWebhooks.class.getName());
-    private static GitlabBuildTrigger trigger;
+    private static HashMap<String, GitlabBuildTrigger> triggers = new HashMap<String, GitlabBuildTrigger>();
     public static final String URLNAME = "gitlab-webhook";
 
-    private Gson g = new GsonBuilder().setPrettyPrinting().create();
+    /**
+     * @param t
+     */
+    public static void addTrigger(GitlabBuildTrigger t) {
+        String key = t.getProjectPath();
+        if (triggers.containsKey(key)) {
+            triggers.remove(key);
+        }
+        triggers.put(key, t);
+    }
 
-    public static void setTrigger(GitlabBuildTrigger trigger) {
-        GitlabWebhooks.trigger = trigger;
+    /**
+     * @param m
+     * @return
+     */
+    private static GitlabBuildTrigger findTrigger(MergeRequest m) {
+        for (String key : triggers.keySet()) {
+            GitlabBuildTrigger t = triggers.get(key);
+            try {
+                if (t.getProjectPath().equals(m.getTarget().path_with_namespace)) {
+                    return t;
+                }
+            } catch (NullPointerException npe) {
+                LOGGER.warning(String.format("%s where handle %s", npe.toString(), m.toString()));
+            }
+        }
+        return null;
     }
 
     public HttpResponse doStart(StaplerRequest request) {
-
         HttpResponse response = new HttpResponse() {
             @Override
             public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
                 rsp.getWriter().println("accepted");
             }
         };
-
         try {
-            String theString = IOUtils.toString(request.getInputStream(), "UTF-8");
+            String requestBodyString = IOUtils.toString(request.getInputStream(), "UTF-8");
+            LOGGER.fine(requestBodyString);
+            OnlyType hookObjectKind = OnlyType.fromJson(requestBodyString);
+            MergeRequest mergeRequest = null;
+            switch (hookObjectKind.object_kind) {
+                case "note":
+                    Note mergeRequestNote = Note.fromJson(requestBodyString);
+                    mergeRequest = mergeRequestNote.merge_request;
+                    break;
+                case "merge_request":
+                    mergeRequest = MergeRequest.fromJson(requestBodyString);
+                    break;
+                default: {}
+            }
+            LOGGER.fine(String.format("MergeRequest is %s", mergeRequest));
+            GitlabBuildTrigger trigger  = mergeRequest != null ? findTrigger(mergeRequest) : null;
+            if (trigger != null) {
+                GitlabMergeRequestBuilder currentBuilder = trigger.getBuilder();
+                GitlabAPI api = currentBuilder.getGitlab().get();
+                GitlabProject project = api.getProject(mergeRequest.getTarget_project_id());
+                GitlabMergeRequest gitlabMergeRequest = api.getMergeRequest(project, mergeRequest.getId());
+                GitlabMergeRequestWrapper mergeRequestWrapper;
+                Map<Integer, GitlabMergeRequestWrapper> mergeRequestWrapperMap = currentBuilder.getMergeRequests();
 
-            OnlyType ot = g.fromJson(theString, OnlyType.class);
-
-            LOGGER.fine(theString);
-            LOGGER.fine(ot.object_kind);
-
-            if (ot.object_kind.equals("merge_request")) {
-                MergeRequest mergeRequest = g.fromJson(theString, MergeRequest.class);
-
-                LOGGER.fine(mergeRequest.toString());
-
-                if ("open".equals(mergeRequest.object_attributes.action) || "update".equals(mergeRequest.object_attributes.action)) {
-
-
-                    if (trigger != null) {
-                        GitlabCause cause = new GitlabCause(
-                                mergeRequest.object_attributes.id,
-                                mergeRequest.object_attributes.iid,
-                                mergeRequest.object_attributes.source.name,
-                                mergeRequest.object_attributes.source.http_url,
-                                mergeRequest.object_attributes.source_branch,
-                                mergeRequest.object_attributes.target_branch,
-                                new HashMap<String, String>(),
-                                mergeRequest.object_attributes.title,
-                                "",
-                                mergeRequest.object_attributes.source_project_id,
-                                mergeRequest.object_attributes.target_project_id,
-                                mergeRequest.object_attributes.last_commit.id);
-
-                        GitlabAPI api = trigger.getBuilder().getGitlab().get();
-                        GitlabProject project = api.getProject(cause.getTargetProjectId());
-                        GitlabMergeRequest gitlabMergeRequest = api.getMergeRequest(project, cause.getMergeRequestId());
-
-                        GitlabMergeRequestWrapper mergeRequestWrapper;
-                        if (trigger.getBuilder().getMergeRequests().containsKey(mergeRequest.object_attributes.id)) {
-                            mergeRequestWrapper = trigger.getBuilder().getMergeRequests().get(mergeRequest.object_attributes.id);
-                        } else {
-                            mergeRequestWrapper = new GitlabMergeRequestWrapper(gitlabMergeRequest, trigger.getBuilder(), project);
-                            trigger.getBuilder().getMergeRequests().put(mergeRequest.object_attributes.id, mergeRequestWrapper);
-                        }
-
-                        mergeRequestWrapper.setLatestCommitOfMergeRequest(
-                                mergeRequest.object_attributes.id.toString(),
-                                mergeRequest.object_attributes.last_commit.id);
-
-                        trigger.getBuilder().getBuilds().build(cause, new HashMap<String, String>(), project, gitlabMergeRequest);
-                    } else {
-                        LOGGER.severe("TRIGGER is not set.");
-                    }
+                if (mergeRequestWrapperMap.containsKey(mergeRequest.getId())) {
+                    mergeRequestWrapper = mergeRequestWrapperMap.get(mergeRequest.getId());
+                } else {
+                    mergeRequestWrapper = new GitlabMergeRequestWrapper(gitlabMergeRequest, currentBuilder, project);
+                    mergeRequestWrapperMap.put(mergeRequest.getId(), mergeRequestWrapper);
                 }
+                mergeRequestWrapper.setLatestCommitOfMergeRequest(
+                        mergeRequest.getId().toString(),
+                        mergeRequest.getLast_commit().id);
+                LOGGER.info(String.format("Webhook detected! Trying to build %s", mergeRequest.toString()));
+                mergeRequestWrapper.check(gitlabMergeRequest);
+            } else {
+                LOGGER.info(String.format("No suitable trigger found for MergeRequest %s! Skipping webhook", mergeRequest));
             }
 
         } catch (IOException ex) {
             LOGGER.severe("There was an error");
             LOGGER.throwing("GitlabWebhooks", "doStart", ex);
+        } catch (JsonSyntaxException e) {
+            LOGGER.warning(e.toString());
+        } catch (Exception e) {
+            LOGGER.severe(String.format("%s on run doStart", e));
         }
-
         return response;
     }
 

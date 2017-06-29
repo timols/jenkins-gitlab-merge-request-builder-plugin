@@ -1,7 +1,6 @@
 package org.jenkinsci.plugins.gitlab;
 
 import hudson.model.Cause;
-
 import java.util.Map;
 
 public class GitlabCause extends Cause {
@@ -44,8 +43,6 @@ public class GitlabCause extends Cause {
         this.targetProjectId = targetProjectId;
         this.lastCommitId = lastCommitId;
     }
-
-
     @Override
     public String getShortDescription() {
         return "Gitlab Merge Request #" + mergeRequestIid + " : " + sourceName + "/" + sourceBranch +

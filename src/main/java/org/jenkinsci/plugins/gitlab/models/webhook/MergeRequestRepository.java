@@ -10,7 +10,7 @@ public class MergeRequestRepository {
     public String name;
     public String http_url;
     public String ssh_url;
-
+    public String path_with_namespace;
     @Override
     public String toString() {
         return "MergeRequestRepository{" +

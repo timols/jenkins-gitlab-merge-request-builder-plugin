@@ -6,9 +6,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  * Created by lordx_000 on 11/14/2015.
  */
 @SuppressFBWarnings("UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD")
-public class ObjectAttributes {
+public class MergeRequestObjectAttributes {
     public String action;
-
     public Integer id;
     public Integer iid;
     public String target_branch;
@@ -19,10 +18,12 @@ public class ObjectAttributes {
     public MergeRequestRepository source;
     public Commit last_commit;
     public String title;
+    public String description;
+
 
     @Override
     public String toString() {
-        return "ObjectAttributes{" +
+        return "MergeRequestObjectAttributes{" +
                 "action='" + action + '\'' +
                 ", id=" + id +
                 ", iid=" + iid +
