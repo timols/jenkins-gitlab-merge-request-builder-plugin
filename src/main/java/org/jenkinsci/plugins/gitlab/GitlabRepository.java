@@ -1,6 +1,5 @@
 package org.jenkinsci.plugins.gitlab;
 
-import org.gitlab.api.GitlabAPI;
 import org.gitlab.api.models.GitlabCommitStatus;
 import org.gitlab.api.models.GitlabMergeRequest;
 import org.gitlab.api.models.GitlabNote;
@@ -129,6 +128,7 @@ public class GitlabRepository {
 
     public GitlabCommitStatus changeCommitStatus(Integer mergeRequestId, String commitHash, String commitStatus, String targetUrl) {
         if (commitHash != null) {
+
             GitlabMergeRequestWrapper gitlabMergeRequestWrapper = mergeRequests.get(mergeRequestId);
 
             LOGGER.info("Sending Status: " + commitStatus);

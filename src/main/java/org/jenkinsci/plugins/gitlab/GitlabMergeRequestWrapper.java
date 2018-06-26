@@ -216,21 +216,21 @@ public class GitlabMergeRequestWrapper {
             if (shouldClose || shouldMerge) {
                 String tailUrl = "";
                 if (shouldClose) {
-                    tailUrl = GitlabProject.URL + "/" + project.getId() + "/merge_request/" + id + "?state_event=close";
+                    tailUrl = GitlabProject.URL + "/" + project.getId() + "/merge_request/" + iid + "?state_event=close";
                 }
                 if (shouldMerge) {
-                    tailUrl = GitlabProject.URL + "/" + project.getId() + "/merge_request/" + id + "/merge";
+                    tailUrl = GitlabProject.URL + "/" + project.getId() + "/merge_request/" + iid + "/merge";
                 }
                 builder.getGitlab().get().retrieve().method("PUT").to(tailUrl, Void.class);
             }
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Failed to automatically merge/close the merge request " + id, e);
+            LOGGER.log(Level.SEVERE, "Failed to automatically merge/close the merge request " + iid, e);
         }
 
         try {
             return builder.getGitlab().get().createNote(mergeRequest, message);
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Failed to create note for merge request " + id, e);
+            LOGGER.log(Level.SEVERE, "Failed to create note for merge request " + iid, e);
             return null;
         }
 
@@ -240,7 +240,7 @@ public class GitlabMergeRequestWrapper {
 
         try {
             GitlabAPI api = builder.getGitlab().get();
-            GitlabMergeRequest mergeRequest = api.getMergeRequest(project, id);
+            GitlabMergeRequest mergeRequest = api.getMergeRequest(project, iid);
 
             return builder.getGitlab().changeCommitStatus(project.getId(), mergeRequest.getSourceBranch(), commitHash, commitStatus, targetUrl);
         } catch (IOException e) {

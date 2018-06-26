@@ -1,6 +1,7 @@
 package org.jenkinsci.plugins.gitlab;
 
 import hudson.model.Cause;
+
 import java.util.Map;
 
 public class GitlabCause extends Cause {
@@ -96,5 +97,4 @@ public class GitlabCause extends Cause {
 	public String getLastCommitId() {
         return lastCommitId;
     }
-
 }
