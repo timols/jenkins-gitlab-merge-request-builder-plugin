@@ -6,7 +6,7 @@ buildscript {
 		}
 	}
 	dependencies {
-		classpath 'org.jenkins-ci.tools:gradle-jpi-plugin:0.11.1'
+		classpath 'org.jenkins-ci.tools:gradle-jpi-plugin:0.14.3'
 	}
 	tasks.withType(JavaCompile) {
 		options.encoding = 'UTF-8'
@@ -15,8 +15,8 @@ buildscript {
 
 apply plugin: 'org.jenkins-ci.jpi'
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 group = 'com.switchfly'
 version = '2.0.2-SNAPSHOT'
@@ -47,13 +47,13 @@ repositories {
 
 dependencies {
 	compile(group: 'org.gitlab', name: 'java-gitlab-api', version: '4.0.0')
-	compile(group: 'com.google.code.gson', name: 'gson', version: '2.7')
+	compile(group: 'com.google.code.gson', name: 'gson', version: '2.8.5')
         compile group: 'com.google.code.findbugs', name: 'annotations', version: '3.0.1'
 	testCompile(group: 'org.hamcrest', name: 'hamcrest-all', version: '1.3')
-	testCompile(group: 'junit', name: 'junit', version: '4.11')
+	testCompile(group: 'junit', name: 'junit', version: '4.12')
 	testCompile(group: 'org.jmockit', name: 'jmockit', version: '1.19')
 }
 
 task wrapper(type: Wrapper) {
-	gradleVersion = '4.6'
+	gradleVersion = '2.4'
 }
