@@ -98,8 +98,7 @@ public class GitlabRepository {
 
     private GitlabProject getProjectForPath(String path) {
         try {
-            String[] np = path.split("/", 2);
-            return builder.getGitlab().get().getProject(np[0], np[1]);
+            return builder.getGitlab().get().getProject(path);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Could not retrieve Project with path: " + path
                 + " (" + e.toString() + ")");
