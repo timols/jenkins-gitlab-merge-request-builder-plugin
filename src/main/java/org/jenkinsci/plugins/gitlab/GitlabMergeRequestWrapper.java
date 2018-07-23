@@ -93,7 +93,7 @@ public class GitlabMergeRequestWrapper {
                 GitlabAPI api = builder.getGitlab().get();
                 sourceProject = getSourceProject(gitlabMergeRequest, api);
             } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, "Failed to get source project for Merge request " + gitlabMergeRequest.getId() + " :\n" + e.getMessage());
+                LOGGER.log(Level.SEVERE, "Failed to get source project for Merge request " + gitlabMergeRequest.getIid() + " :\n" + e.getMessage());
                 return;
             }
         }
@@ -109,7 +109,7 @@ public class GitlabMergeRequestWrapper {
             Map<String, String> customParameters = getSpecifiedCustomParameters(gitlabMergeRequest, api);
             build(customParameters, latestCommit.getId(), gitlabMergeRequest);
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Failed to fetch commits for Merge Request " + gitlabMergeRequest.getId());
+            LOGGER.log(Level.SEVERE, "Failed to fetch commits for Merge Request " + gitlabMergeRequest.getIid());
         }
     }
 
