@@ -1,6 +1,5 @@
 package org.jenkinsci.plugins.gitlab;
 
-import org.gitlab.api.GitlabAPI;
 import org.gitlab.api.models.GitlabCommitStatus;
 import org.gitlab.api.models.GitlabMergeRequest;
 import org.gitlab.api.models.GitlabNote;
@@ -98,14 +97,10 @@ public class GitlabRepository {
 
     private GitlabProject getProjectForPath(String path) {
         try {
-            List<GitlabProject> projects = builder.getGitlab().get().getProjects();
-            for (GitlabProject project : projects) {
-                if (project.getPathWithNamespace().equals(path)) {
-                    return project;
-                }
-            }
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Could not retrieve Project with path: " + path + " (Have you properly configured the project path?)");
+            return builder.getGitlab().get().getProject(path);
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Could not retrieve Project with path: " + path
+                + " (" + e.toString() + ")");
         }
         return null;
     }
@@ -129,6 +124,7 @@ public class GitlabRepository {
 
     public GitlabCommitStatus changeCommitStatus(Integer mergeRequestId, String commitHash, String commitStatus, String targetUrl) {
         if (commitHash != null) {
+
             GitlabMergeRequestWrapper gitlabMergeRequestWrapper = mergeRequests.get(mergeRequestId);
 
             LOGGER.info("Sending Status: " + commitStatus);

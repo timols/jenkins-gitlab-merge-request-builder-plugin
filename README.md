@@ -1,14 +1,15 @@
-# Gitlab Merge Request Builder Plugin
+# GitLab Merge Request Builder Plugin
 
 A plugin that allows Jenkins to build merge requests.
 
-This plugin fetches the source and target branches of a Gitlab merge request and makes them available
+This plugin fetches the source and target branches of a GitLab merge request and makes them available
 to your build via build parameters. Once the build completes, Jenkins will leave a comment on the merge
 request indicating whether the merge request was successful.
 
-## Supported Gitlab Versions
- * Gitlab version < 8.1.X: use v1.2.4 of this plugin
- * Gitlab version >= 8.1.X: use the latest version of this plugin
+## Supported GitLab Versions
+ * GitLab version < 8.1: use v1.2.4 of this plugin
+ * GitLab version >= 8.1 < 11: use v2.0.1 of this plugin
+ * GitLab version >= 11: use the latest version of this plugin
 
 ## Prerequisites
 
@@ -17,22 +18,22 @@ request indicating whether the merge request was successful.
 
 ## Installation
 
-* Ensure that a Jenkins user exists within Gitlab and has access to the repository.
-    * For Gitlab version < 8.4.X: ensure that the user has **Reporter** level access to the project.
-    * For Gitlab version >= 8.4.X: ensure that the user has **Developer** level access to the project.
+* Ensure that a Jenkins user exists within GitLab and has access to the repository.
+    * For GitLab version < 8.4.X: ensure that the user has **Reporter** level access to the project.
+    * For GitLab version >= 8.4.X: ensure that the user has **Developer** level access to the project.
     * Please note that if you would like to use the Auto-merge feature Jenkins needs to have **Developer** access to the project.
 * Install the plugin in Jenkins.
-    * The plugin is hosted on the [Jenkins Plugin repository](https://wiki.jenkins-ci.org/display/JENKINS/Gitlab+Merge+Request+Builder+Plugin)
+    * The plugin is hosted on the [Jenkins Plugin repository](https://wiki.jenkins-ci.org/display/JENKINS/GitLab+Merge+Request+Builder+Plugin)
     * Go to ``Jenkins`` -> ``Manage Plugins`` -> ``Available``
-    * Search for ``Gitlab Merge Request Builder``
+    * Search for ``GitLab Merge Request Builder``
     * And install it
     * Ensure you restart Jenkins
-* Go to ``Manage Jenkins`` -> ``Configure System`` -> ``Gitlab Merge Request Builder``
-* Set the ``Gitlab Host URL`` to the base URL of your Gitlab server
+* Go to ``Manage Jenkins`` -> ``Configure System`` -> ``GitLab Merge Request Builder``
+* Set the ``GitLab Host URL`` to the base URL of your GitLab server
 * Set your ``Jenkins Username`` for the Jenkins user (defaults to jenkins)
-* Set your ``Jenkins API Token`` for the Jenkins user. This can be found by logging into Gitlab as Jenkins
+* Set your ``Jenkins API Token`` for the Jenkins user. This can be found by logging into GitLab as Jenkins
   and going to the user profile section.
-* Set/change any of the other available parameters as necessary. If you host Gitlab over an SSL connection
+* Set/change any of the other available parameters as necessary. If you host GitLab over an SSL connection
   you may want to enable ignoring certificate errors.
 * ``Save`` to preserve your changes.
 * Go to `Manage Jenkins` -> `Configure Global Security` and set `Markup Formatter` to *Safe HTML*. It will make Jenkins display links in build history properly.
@@ -45,19 +46,19 @@ request indicating whether the merge request was successful.
 
 * Create a new job by going to ``New Job``
 * Set the ``Project Name``
-* Feel free to specify the ``GitHub Project`` URL as the URL for the Gitlab project (if you have the GitHub plugin installed)
+* Feel free to specify the ``GitHub Project`` URL as the URL for the GitLab project (if you have the GitHub plugin installed)
 * In the ``Source Code Management`` section:
     * Click ``Git`` and enter your Repository URL and in Advanced set its Name to ``origin``
     * For merge requests from forked repositories add another repository with Repository URL ``${gitlabSourceRepository}`` and in Advanced set Name to ``${gitlabSourceName}``
     * In ``Branch Specifier`` enter ``refs/remotes/origin/${gitlabSourceBranch}`` or for merge requests from forked repositories enter ``${gitlabSourceName}/${gitlabSourceBranch}``
     * In the ``Additional Behaviours`` section:
         * Click the ``Add`` drop down button and the ``Merge before build`` item
-        * Specify the name of the repository as ``origin`` (if origin corresponds to Gitlab) and enter the
+        * Specify the name of the repository as ``origin`` (if origin corresponds to GitLab) and enter the
           ``Branch to merge to`` as ``${gitlabTargetBranch}``
         * **Ensure ``Prune stale remote-tracking branches`` is not added**
 * In the ``Build Triggers`` section:
-    * Check the ``Gitlab Merge Requests Builder``
-    * Enter the ``Gitlab Project Path``, this might be something like ``your_group/your_project`` for Gitlab URL ``http://git.tld/your_group/your_project``
+    * Check the ``GitLab Merge Requests Builder``
+    * Enter the ``GitLab Project Path``, this might be something like ``your_group/your_project`` for GitLab URL ``http://git.tld/your_group/your_project``
     * The ``Target Branch Regex`` may be configured to whitelist this job for certain target branches. If left empty, every valid merge request for the configured project path will trigger this job.
     * The ``Use HTTP(S) URL`` checkbox should be used if you want Jenkins to
 clone/fetch using HTTP(S) instead of SSH.
