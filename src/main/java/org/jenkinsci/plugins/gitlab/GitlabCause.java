@@ -16,6 +16,7 @@ public class GitlabCause extends Cause {
     private final Integer sourceProjectId;
     private final Integer targetProjectId;
     private final String lastCommitId;
+    private String note;
 
     public GitlabCause(Integer mergeRequestId,
                        Integer mergeRequestIid,
@@ -93,8 +94,15 @@ public class GitlabCause extends Cause {
 		return targetProjectId;
 	}
 
-	public String getLastCommitId() {
+	  public String getLastCommitId() {
         return lastCommitId;
     }
 
+    public void setNote(String note) {
+        this.note = note;
+    }
+
+    public String getNote() {
+        return note;
+    }
 }

@@ -76,15 +76,16 @@ public class GitlabMergeRequestWrapper {
             sourceBranch = gitlabMergeRequest.getSourceBranch();
         }
 
+        // force to get new title.
+        title = gitlabMergeRequest.getTitle();
         if (title == null || title.trim().isEmpty()) {
-            title = gitlabMergeRequest.getTitle();
-            
+//            title = gitlabMergeRequest.getTitle();
             if (title == null) { title = ""; }
         }
 
+        description = gitlabMergeRequest.getDescription();
         if (description == null || description.trim().isEmpty()) {
-            description = gitlabMergeRequest.getDescription();
-            
+//            description = gitlabMergeRequest.getDescription();
             if (description == null) { description = ""; }
         }
 
