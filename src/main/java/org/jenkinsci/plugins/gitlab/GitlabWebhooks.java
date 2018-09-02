@@ -44,8 +44,8 @@ public class GitlabWebhooks implements UnprotectedRootAction {
      * @return
      */
     private static GitlabBuildTrigger findTrigger(MergeRequest m) {
-        for (String key : triggers.keySet()) {
-            GitlabBuildTrigger t = triggers.get(key);
+        for (Map.Entry<String, GitlabBuildTrigger> entry : triggers.entrySet()) {
+            GitlabBuildTrigger t = entry.getValue();
             try {
                 if (t.getProjectPath().equals(m.getTarget().path_with_namespace)) {
                     return t;
