@@ -88,6 +88,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
         values.put("gitlabTargetBranch", new StringParameterValue("gitlabTargetBranch", cause.getTargetBranch()));
         values.put("gitlabTitle", new StringParameterValue("gitlabTitle", cause.getTitle()));
         values.put("gitlabDescription", new StringParameterValue("gitlabDescription", cause.getDescription()));
+        values.put("gitlabNote", new StringParameterValue("gitlabNote", cause.getNote()));
         for (Map.Entry<String, String> entry : cause.getCustomParameters().entrySet()) {
             values.put(entry.getKey(), new StringParameterValue(entry.getKey(), entry.getValue()));
         }
@@ -240,7 +241,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
 
         @Override
         public String getDisplayName() {
-            return "Gitlab Merge Requests Builder";
+            return "JD Gitlab Merge Requests Builder(V1.0)";
         }
 
         @Override

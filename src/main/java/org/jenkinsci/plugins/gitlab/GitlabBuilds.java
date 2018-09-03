@@ -39,6 +39,7 @@ public class GitlabBuilds {
     public String build(GitlabCause cause, Map<String, String> customParameters, GitlabProject project, GitlabMergeRequest mergeRequest) throws IOException {
 
         boolean shouldRun = true;
+        boolean shouldRunCauseByNote = false;
         GitlabAPI api = trigger.getBuilder().getGitlab().get();
         String triggerComment = trigger.getTriggerComment();
         GitlabNote lastNote = getLastNote(mergeRequest, api);
@@ -55,9 +56,11 @@ public class GitlabBuilds {
             shouldRun = false;
         }
 
-        if (lastNote != null && lastNote.getBody().equals(triggerComment)) {
+        if (lastNote != null && lastNote.getBody().startsWith(triggerComment)) {
             LOGGER.info("Trigger comment found");
             shouldRun = true;
+            shouldRunCauseByNote = true;
+            cause.setNote(lastNote.getBody().replace(triggerComment, "").trim());
         }
 
         if (shouldRun) {
@@ -78,7 +81,7 @@ public class GitlabBuilds {
         }
 
         if (shouldRun) {
-            if (isWorkInProgress(mergeRequest.getTitle())) {
+            if (!shouldRunCauseByNote && isWorkInProgress(mergeRequest.getTitle())) {
                 shouldRun = false;
             }
         }

@@ -31,6 +31,7 @@ public class GitLabEnvironmentContributor extends EnvironmentContributor {
             variables.put("gitlabSourceProjectId", cause.getSourceProjectId()+"");
             variables.put("gitlabTargetProjectId", cause.getTargetProjectId()+"");
             variables.put("gitlabLastCommitId", cause.getLastCommitId());
+            variables.put("gitlabNote", cause.getNote());
             envs.overrideAll(variables);
         }
     }
