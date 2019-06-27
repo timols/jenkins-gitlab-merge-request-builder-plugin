@@ -66,7 +66,7 @@ public class GitlabWebhooks implements UnprotectedRootAction {
         };
         try {
             String requestBodyString = IOUtils.toString(request.getInputStream(), "UTF-8");
-            LOGGER.fine(requestBodyString);
+            LOGGER.info(requestBodyString);
             OnlyType hookObjectKind = OnlyType.fromJson(requestBodyString);
             MergeRequest mergeRequest = null;
             switch (hookObjectKind.object_kind) {
@@ -85,7 +85,7 @@ public class GitlabWebhooks implements UnprotectedRootAction {
                 GitlabMergeRequestBuilder currentBuilder = trigger.getBuilder();
                 GitlabAPI api = currentBuilder.getGitlab().get();
                 GitlabProject project = api.getProject(mergeRequest.getTarget_project_id());
-                GitlabMergeRequest gitlabMergeRequest = api.getMergeRequest(project, mergeRequest.getId());
+                GitlabMergeRequest gitlabMergeRequest = api.getMergeRequest(project, mergeRequest.getIid());
                 GitlabMergeRequestWrapper mergeRequestWrapper;
                 Map<Integer, GitlabMergeRequestWrapper> mergeRequestWrapperMap = currentBuilder.getMergeRequests();
 
@@ -105,7 +105,7 @@ public class GitlabWebhooks implements UnprotectedRootAction {
             }
 
         } catch (IOException ex) {
-            LOGGER.severe("There was an error");
+            LOGGER.severe("There was an error: " + ex.toString());
             LOGGER.throwing("GitlabWebhooks", "doStart", ex);
         } catch (JsonSyntaxException e) {
             LOGGER.warning(e.toString());
