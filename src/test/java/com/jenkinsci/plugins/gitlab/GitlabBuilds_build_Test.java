@@ -63,7 +63,8 @@ public class GitlabBuilds_build_Test {
             "commitHash"
     );
 
-    List<GitlabCommitStatus> statuses = Arrays.asList(new GitlabCommitStatus());
+    GitlabCommitStatus status = new GitlabCommitStatus();
+    List<GitlabCommitStatus> statuses = Arrays.asList(status);
 
     @BeforeClass
     public static void beforeClass() {
@@ -83,6 +84,8 @@ public class GitlabBuilds_build_Test {
 
     @Before
     public void before() throws Exception {
+
+        status.setStatus("running");
 
         user.setUsername("username");
         mergeRequest.setAssignee(user);
