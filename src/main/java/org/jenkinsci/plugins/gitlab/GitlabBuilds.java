@@ -51,12 +51,20 @@ public class GitlabBuilds {
             shouldRun = false;
         }
 
+        LOGGER.log(Level.INFO, "The merge request state: " + mergeRequest.getState());
+        // state is close
+        if (mergeRequest.isClosed()) {
+            LOGGER.log(Level.INFO, "The merge request " + cause.getTitle() + " has been closed or merged.");
+            shouldRun = false;
+        }
+
         if (hasCommitStatus(project, cause.getLastCommitId(), api)) {
+            LOGGER.log(Level.INFO, "The merge request " + cause.getTitle() + "  has running/pending pipelines.");
             shouldRun = false;
         }
 
         if (lastNote != null && lastNote.getBody().equals(triggerComment)) {
-            LOGGER.info("Trigger comment found");
+            LOGGER.log(Level.INFO, "Trigger comment found the merge request " + cause.getTitle());
             shouldRun = true;
         }
 
@@ -130,14 +138,19 @@ public class GitlabBuilds {
      */
     private synchronized boolean hasCommitStatus(GitlabProject project, String commitHash, GitlabAPI api) throws IOException {
         try {
+            boolean hasPendingOrRunningStatus = false;
             List<GitlabCommitStatus> statuses = api.getCommitStatuses(project, commitHash);
-
+            // pending, running,
             for (GitlabCommitStatus status : statuses) {
                 LOGGER.fine("Status of " + commitHash + " -> " + status.getStatus());
+                if (status.getStatus().equals("pending") || status.getStatus().equals("running")) {
+                    hasPendingOrRunningStatus = true;
+                }
             }
 
             // Return true if there are some statuses
-            return !statuses.isEmpty();
+//            return !statuses.isEmpty();
+            return hasPendingOrRunningStatus;
 
         } catch (FileNotFoundException ex) {
             // Can ignore this one because it just means that there is no status for a commit
