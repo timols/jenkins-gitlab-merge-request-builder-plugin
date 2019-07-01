@@ -36,8 +36,10 @@ public class GitlabBuilds_build_Test {
     GitlabProject project;
     @Injectable
     GitlabUser user;
-    @Injectable
-    GitlabMergeRequest mergeRequest;
+
+    //@Injectable
+
+    GitlabMergeRequest mergeRequest = new GitlabMergeRequest();
 
     @Injectable
     GitlabBuildTrigger trigger;
@@ -46,7 +48,6 @@ public class GitlabBuilds_build_Test {
 
     @Tested
     GitlabBuilds subject;
-
 
     GitlabCause cause = new GitlabCause(
             1,
@@ -107,6 +108,38 @@ public class GitlabBuilds_build_Test {
         new Verifications() {{
             trigger.startJob((GitlabCause) any);
         }};
+    }
+
+    @Test
+    public void doesNotBuild_MergeRequestClosed() throws IOException {
+
+        String stateStr = mergeRequest.getState();
+        mergeRequest.setState("closed");
+
+        subject.build(cause, new HashMap<String, String>(), project, mergeRequest);
+
+        new Verifications() {{
+            trigger.startJob((GitlabCause) any);
+            times = 0;
+        }};
+
+        mergeRequest.setState(stateStr);
+    }
+
+    @Test
+    public void doesNotBuild_MergeRequestMerged() throws IOException {
+
+        String stateStr = mergeRequest.getState();
+        mergeRequest.setState("merged");
+
+        subject.build(cause, new HashMap<String, String>(), project, mergeRequest);
+
+        new Verifications() {{
+            trigger.startJob((GitlabCause) any);
+            times = 0;
+        }};
+
+        mergeRequest.setState(stateStr);
     }
 
     @Test

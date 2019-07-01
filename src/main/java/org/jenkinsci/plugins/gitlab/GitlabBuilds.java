@@ -53,7 +53,7 @@ public class GitlabBuilds {
 
         LOGGER.log(Level.INFO, "The merge request state: " + mergeRequest.getState());
         // state is close
-        if (mergeRequest.isClosed()) {
+        if (mergeRequest.isClosed() || mergeRequest.isMerged()) {
             LOGGER.log(Level.INFO, "The merge request " + cause.getTitle() + " has been closed or merged.");
             shouldRun = false;
         }
