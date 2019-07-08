@@ -43,7 +43,16 @@ public class GitlabBuilds {
         String triggerComment = trigger.getTriggerComment();
         GitlabNote lastNote = getLastNote(mergeRequest, api);
 
-        if (isAllowedByTargetBranchRegex(cause.getTargetBranch())) {
+
+        if (isAllowedBySourceBranchRegex(cause.getSourceBranch())) {
+            LOGGER.log(Level.INFO, "The source regex matches the source branch {" + cause.getSourceBranch() + "}. Target branch {" + cause.getTargetBranch() + "}");
+            shouldRun = true;
+        } else {
+            LOGGER.log(Level.INFO, "The source regex did not match the source branch {" + cause.getSourceBranch() + "}. Not triggering this job. Target branch {" + cause.getTargetBranch() + "}");
+            shouldRun = false;
+        }
+
+        if (shouldRun && isAllowedByTargetBranchRegex(cause.getTargetBranch())) {
             LOGGER.log(Level.INFO, "The target regex matches the target branch {" + cause.getTargetBranch() + "}. Source branch {" + cause.getSourceBranch() + "}");
             shouldRun = true;
         } else {
@@ -119,6 +128,16 @@ public class GitlabBuilds {
      */
     public boolean isAllowedByTargetBranchRegex(String branchName) {
         String regex = trigger.getTargetBranchRegex();
+        // Allow when no pattern has been specified. (default behavior)
+        if (StringUtils.isEmpty(regex)) {
+            return true;
+        }
+        Pattern pattern = Pattern.compile(regex);
+        return pattern.matcher(branchName).matches();
+    }
+
+    public boolean isAllowedBySourceBranchRegex(String branchName) {
+        String regex = trigger.getSourceBranchRegex();
         // Allow when no pattern has been specified. (default behavior)
         if (StringUtils.isEmpty(regex)) {
             return true;

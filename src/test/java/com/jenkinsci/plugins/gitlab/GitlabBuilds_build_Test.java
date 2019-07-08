@@ -143,7 +143,23 @@ public class GitlabBuilds_build_Test {
     }
 
     @Test
-    public void doesNotBuild_branchPattern() throws IOException {
+    public void doesNotBuild_SourceBranchPattern() throws IOException {
+
+        new NonStrictExpectations() {{
+            trigger.getSourceBranchRegex();
+            result = "thisisafakepattern";
+        }};
+
+        subject.build(cause, new HashMap<String, String>(), project, mergeRequest);
+
+        new Verifications() {{
+            trigger.startJob((GitlabCause) any);
+            times = 0;
+        }};
+    }
+
+    @Test
+    public void doesNotBuild_TargetBranchPattern() throws IOException {
 
         new NonStrictExpectations() {{
             trigger.getTargetBranchRegex();

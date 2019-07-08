@@ -25,6 +25,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
     private static final Logger LOGGER = Logger.getLogger(GitlabBuildTrigger.class.getName());
 
     private final String projectPath;
+    private final String sourceBranchRegex;
     private final String targetBranchRegex;
     private final boolean useHttpUrl;
     private final String assigneeFilter;
@@ -38,6 +39,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
     @DataBoundConstructor
     public GitlabBuildTrigger(String cron,
                               String projectPath,
+                              String sourceBranchRegex,
                               String targetBranchRegex,
                               boolean useHttpUrl,
                               String assigneeFilter,
@@ -49,6 +51,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
 
         super(cron);
         this.projectPath = projectPath;
+        this.sourceBranchRegex = sourceBranchRegex;
         this.targetBranchRegex = targetBranchRegex;
         this.useHttpUrl = useHttpUrl;
         this.assigneeFilter = assigneeFilter;
@@ -170,6 +173,10 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
 
     public String getTargetBranchRegex() {
         return targetBranchRegex;
+    }
+
+    public String getSourceBranchRegex() {
+        return sourceBranchRegex;
     }
 
     public boolean getUseHttpUrl() {
