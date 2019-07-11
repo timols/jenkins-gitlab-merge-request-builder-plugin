@@ -8,6 +8,8 @@ import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
 import hudson.util.FormValidation;
 import hudson.util.Secret;
+import jenkins.model.Jenkins;
+import jenkins.model.ParameterizedJobMixIn;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -20,7 +22,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
+public final class GitlabBuildTrigger extends Trigger<Job<?, ?>> {
 
     private static final Logger LOGGER = Logger.getLogger(GitlabBuildTrigger.class.getName());
 
@@ -63,7 +65,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
     }
 
     @Override
-    public void start(AbstractProject<?, ?> project, boolean newInstance) {
+    public void start(Job<?, ?> project, boolean newInstance) {
         try {
             GitlabWebhooks.addTrigger(this);
 
@@ -85,6 +87,8 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
 
         values.put("gitlabMergeRequestId", new StringParameterValue("gitlabMergeRequestId", String.valueOf(cause.getMergeRequestId())));
         values.put("gitlabMergeRequestIid", new StringParameterValue("gitlabMergeRequestIid", String.valueOf(cause.getMergeRequestIid())));
+        values.put("gitlabMergeRequestAuthor", new StringParameterValue("gitlabMergeRequestAuthor", cause.getAuthor()));
+        values.put("gitlabMergeRequestAuthorEmail", new StringParameterValue("gitlabMergeRequestAuthorEmail", cause.getAuthorEmail()));
         values.put("gitlabSourceName", new StringParameterValue("gitlabSourceName", cause.getSourceName()));
         values.put("gitlabSourceRepository", new StringParameterValue("gitlabSourceRepository", cause.getSourceRepository()));
         values.put("gitlabSourceBranch", new StringParameterValue("gitlabSourceBranch", cause.getSourceBranch()));
@@ -96,11 +100,19 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
         }
 
         List<ParameterValue> listValues = new ArrayList<>(values.values());
-        if (job == null) {
-            return null;
-        } else {
-            return job.scheduleBuild2(0, cause, new ParametersAction(listValues));
-        }
+
+        ParameterizedJobMixIn scheduledJob = new ParameterizedJobMixIn() {
+            @Override
+            protected Job asJob() {
+                return job;
+            }
+        };
+
+        return scheduledJob.scheduleBuild2(
+                0,
+                new CauseAction(cause),
+                new ParametersAction(listValues)
+                );
     }
 
     private Map<String, ParameterValue> getDefaultParameters() {
@@ -242,7 +254,7 @@ public final class GitlabBuildTrigger extends Trigger<AbstractProject<?, ?>> {
 
         @Override
         public boolean isApplicable(Item item) {
-            return item instanceof AbstractProject;
+            return true;
         }
 
         @Override

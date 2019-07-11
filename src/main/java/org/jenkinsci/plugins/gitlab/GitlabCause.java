@@ -7,6 +7,8 @@ import java.util.Map;
 public class GitlabCause extends Cause {
     private final Integer mergeRequestId;
     private final Integer mergeRequestIid;
+    private final String author;
+    private final String authorEmail;
     private final String sourceName;
     private final String sourceRepository;
     private final String sourceBranch;
@@ -17,9 +19,14 @@ public class GitlabCause extends Cause {
     private final Integer sourceProjectId;
     private final Integer targetProjectId;
     private final String lastCommitId;
+    private final String webUrl;
+
+    private GitlabBuildTrigger trigger;
 
     public GitlabCause(Integer mergeRequestId,
                        Integer mergeRequestIid,
+                       String author,
+                       String authorEmail,
                        String sourceName,
                        String sourceRepository,
                        String sourceBranch,
@@ -29,10 +36,13 @@ public class GitlabCause extends Cause {
                        String description,
                        Integer sourceProjectId,
                        Integer targetProjectId, 
-                       String lastCommitId) {
+                       String lastCommitId,
+                       String webUrl) {
     	
         this.mergeRequestId = mergeRequestId;
         this.mergeRequestIid = mergeRequestIid;
+        this.author = author;
+        this.authorEmail = authorEmail;
         this.sourceName = sourceName;
         this.sourceRepository = sourceRepository;
         this.sourceBranch = sourceBranch;
@@ -43,10 +53,11 @@ public class GitlabCause extends Cause {
         this.sourceProjectId = sourceProjectId;
         this.targetProjectId = targetProjectId;
         this.lastCommitId = lastCommitId;
+        this.webUrl = webUrl;
     }
     @Override
     public String getShortDescription() {
-        return "Gitlab Merge Request #" + mergeRequestIid + " : " + sourceName + "/" + sourceBranch +
+        return "Gitlab Merge Request #" + mergeRequestIid + "(" + this.getAuthor() + ")" + " : " + sourceName + "/" + sourceBranch +
                 " => " + targetBranch;
     }
 
@@ -96,5 +107,25 @@ public class GitlabCause extends Cause {
 
 	public String getLastCommitId() {
         return lastCommitId;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public String getAuthorEmail() {
+        return authorEmail;
+    }
+
+    public String getWebUrl() {
+        return webUrl;
+    }
+
+    public GitlabBuildTrigger getTrigger() {
+        return trigger;
+    }
+
+    public void setTrigger(GitlabBuildTrigger trigger) {
+        this.trigger = trigger;
     }
 }

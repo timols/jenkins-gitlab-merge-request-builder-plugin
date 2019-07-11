@@ -22,6 +22,8 @@ public class GitLabEnvironmentContributor extends EnvironmentContributor {
             Map<String, String> variables = new HashMap<>();
             variables.put("gitlabMergeRequestId", cause.getMergeRequestId() + "");
             variables.put("gitlabMergeRequestIid", cause.getMergeRequestIid() + "");
+            variables.put("gitlabMergeRequestAuthor", cause.getAuthor());
+            variables.put("gitlabMergeRequestAuthorEmail", cause.getAuthorEmail());
             variables.put("gitlabSourceName", cause.getSourceName());
             variables.put("gitlabSourceRepository", cause.getSourceRepository());
             variables.put("gitlabSourceBranch", cause.getSourceBranch());

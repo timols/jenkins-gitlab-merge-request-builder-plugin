@@ -32,6 +32,6 @@ public class Gitlab {
     
     public synchronized GitlabCommitStatus changeCommitStatus(Integer projectId, String branch, String commitHash, String commitStatus, String targetUrl) throws IOException {
     	GitlabProject project = get().getProject(projectId);
-    	return get().createCommitStatus(project, commitHash, commitStatus, branch, "jenkins", targetUrl, null);
+    	return get().createCommitStatus(project, commitHash, commitStatus, branch, "Jenkins", targetUrl, "Gitlab MR Builder");
     }
 }

@@ -1,12 +1,13 @@
 package org.jenkinsci.plugins.gitlab;
 
 import hudson.model.AbstractProject;
+import hudson.model.Job;
 
 import java.util.Map;
 
 public class GitlabMergeRequestBuilder {
 
-    private AbstractProject<?, ?> project;
+    private Job<?, ?> project;
     private GitlabBuildTrigger trigger;
     private Map<Integer, GitlabMergeRequestWrapper> mergeRequests;
     private GitlabBuilds builds;
@@ -37,7 +38,7 @@ public class GitlabMergeRequestBuilder {
         return trigger;
     }
 
-    public GitlabMergeRequestBuilder setProject(AbstractProject<?, ?> project) {
+    public GitlabMergeRequestBuilder setProject(Job<?, ?> project) {
         this.project = project;
         return this;
     }

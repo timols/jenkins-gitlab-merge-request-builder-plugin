@@ -118,8 +118,8 @@ public class GitlabRepository {
     }
 
     public GitlabNote createNote(Integer mergeRequestId, String message, boolean shouldClose, boolean shouldMerge) {
-        GitlabMergeRequestWrapper gitlabMergeRequestWrapper = mergeRequests.get(mergeRequestId);
-        return gitlabMergeRequestWrapper.createNote(message, shouldClose, shouldMerge);
+        GitlabMergeRequestWrapper wrapper = mergeRequests.get(mergeRequestId);
+        return GitlabMergeRequestWrapper.createNote(wrapper.getId(), wrapper.getIid(), wrapper.getProject().getId(), message, shouldClose, shouldMerge);
     }
 
     public GitlabCommitStatus changeCommitStatus(Integer mergeRequestId, String commitHash, String commitStatus, String targetUrl) {

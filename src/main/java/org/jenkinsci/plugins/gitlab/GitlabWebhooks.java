@@ -4,9 +4,11 @@ import com.google.gson.JsonSyntaxException;
 import hudson.Extension;
 import hudson.model.UnprotectedRootAction;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.gitlab.api.GitlabAPI;
 import org.gitlab.api.models.GitlabMergeRequest;
 import org.gitlab.api.models.GitlabProject;
+import org.gitlab.api.models.GitlabUser;
 import org.jenkinsci.plugins.gitlab.models.webhook.MergeRequest;
 import org.jenkinsci.plugins.gitlab.models.webhook.Note;
 import org.jenkinsci.plugins.gitlab.models.webhook.OnlyType;
@@ -66,7 +68,7 @@ public class GitlabWebhooks implements UnprotectedRootAction {
         };
         try {
             String requestBodyString = IOUtils.toString(request.getInputStream(), "UTF-8");
-            LOGGER.info(requestBodyString);
+//            LOGGER.info(requestBodyString);
             OnlyType hookObjectKind = OnlyType.fromJson(requestBodyString);
             MergeRequest mergeRequest = null;
             switch (hookObjectKind.object_kind) {
@@ -79,13 +81,24 @@ public class GitlabWebhooks implements UnprotectedRootAction {
                     break;
                 default: {}
             }
-            LOGGER.fine(String.format("MergeRequest is %s", mergeRequest));
+            LOGGER.info(String.format("MergeRequest is %s", mergeRequest));
             GitlabBuildTrigger trigger  = mergeRequest != null ? findTrigger(mergeRequest) : null;
             if (trigger != null) {
                 GitlabMergeRequestBuilder currentBuilder = trigger.getBuilder();
                 GitlabAPI api = currentBuilder.getGitlab().get();
                 GitlabProject project = api.getProject(mergeRequest.getTarget_project_id());
                 GitlabMergeRequest gitlabMergeRequest = api.getMergeRequest(project, mergeRequest.getIid());
+                // make sure author email exists
+                GitlabUser author = gitlabMergeRequest.getAuthor();
+                LOGGER.info(String.format("MergeRequest author is %s:%s:%s", author.getId(), author.getName(), author.getEmail()));
+                if (StringUtils.isEmpty(author.getEmail())) {
+                    String tailUrl = GitlabUser.URL + "/" + author.getId();
+                    String json = api.retrieve().to(tailUrl, String.class);
+                    LOGGER.info(String.format("Author is %s", json));
+                    author = api.getUser(gitlabMergeRequest.getAuthor().getId());
+                    gitlabMergeRequest.getAuthor().setEmail(author.getEmail());
+                }
+                LOGGER.info(String.format("MergeRequest author is %s:%s:%s", author.getId(), author.getName(), author.getEmail()));
                 GitlabMergeRequestWrapper mergeRequestWrapper;
                 Map<Integer, GitlabMergeRequestWrapper> mergeRequestWrapperMap = currentBuilder.getMergeRequests();
 

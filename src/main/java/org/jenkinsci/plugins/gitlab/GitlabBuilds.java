@@ -1,10 +1,6 @@
 package org.jenkinsci.plugins.gitlab;
 
-import hudson.model.AbstractBuild;
-import hudson.model.Cause;
-import hudson.model.Result;
 import hudson.model.queue.QueueTaskFuture;
-import jenkins.model.Jenkins;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -42,7 +38,6 @@ public class GitlabBuilds {
         GitlabAPI api = trigger.getBuilder().getGitlab().get();
         String triggerComment = trigger.getTriggerComment();
         GitlabNote lastNote = getLastNote(mergeRequest, api);
-
 
         if (isAllowedBySourceBranchRegex(cause.getSourceBranch())) {
             LOGGER.log(Level.INFO, "The source regex matches the source branch {" + cause.getSourceBranch() + "}. Target branch {" + cause.getTargetBranch() + "}");
@@ -107,7 +102,8 @@ public class GitlabBuilds {
             if (build == null) {
                 LOGGER.log(Level.SEVERE, "Job failed to start.");
             }
-            return withCustomParameters(new StringBuilder("Build triggered."), customParameters).toString();
+
+            return GitlabBuilds.withCustomParameters(new StringBuilder("Build triggered."), customParameters).toString();
         } else {
             LOGGER.info("Build is not supposed to run");
             return "";
@@ -241,7 +237,7 @@ public class GitlabBuilds {
         return shouldRun;
     }
 
-    private StringBuilder withCustomParameters(StringBuilder sb, Map<String, String> customParameters) {
+    public static StringBuilder withCustomParameters(StringBuilder sb, Map<String, String> customParameters) {
         if (customParameters.isEmpty()) {
             return sb;
         }
@@ -256,128 +252,5 @@ public class GitlabBuilds {
         }
         sb.append("\n\n");
         return sb;
-    }
-
-    private GitlabCause getCause(AbstractBuild build) {
-        Cause cause = build.getCause(GitlabCause.class);
-
-        if (cause == null || !(cause instanceof GitlabCause)) {
-            return null;
-        }
-
-        return (GitlabCause) cause;
-    }
-
-    private Result getResult(AbstractBuild build) {
-        return build.getResult();
-    }
-
-    private String getRootUrl() {
-        Jenkins instance = Jenkins.getInstance();
-        return instance == null ? "" : instance.getRootUrl();
-    }
-
-    private boolean isEnableBuildTriggeredMessage() {
-        return trigger.getBuilder().isEnableBuildTriggeredMessage();
-    }
-
-    private boolean isPublishBuildProgressMessages() {
-        return trigger.getPublishBuildProgressMessages();
-    }
-
-    /**
-     *
-     * @param build AbstractBuild
-     */
-    public void onStarted(AbstractBuild build) {
-        GitlabCause cause = getCause(build);
-
-        if (cause == null) {
-            return;
-        }
-
-        try {
-            build.setDescription("<a href=\"" + repository.getMergeRequestUrl(cause.getMergeRequestIid()) + "\">" + getOnStartedMessage(cause) + "</a>");
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Can't update build description", e);
-        }
-
-        String url = getRootUrl() + build.getUrl();
-
-        if (isPublishBuildProgressMessages()) {
-            repository.createNote(cause.getMergeRequestId(), "Build Started: " + "[" + url + "](" + url + ")", false, false);
-        }
-
-        repository.changeCommitStatus(cause.getMergeRequestId(), cause.getLastCommitId(), "running", url);
-    }
-
-    /**
-     * @param build AbstractBuild
-     */
-    public void onCompleted(AbstractBuild build) {
-        GitlabCause cause = getCause(build);
-
-        if (cause == null) {
-            return;
-        }
-
-        boolean stable = false;
-        StringBuilder stringBuilder = new StringBuilder();
-        Result result = getResult(build);
-
-        if (result == Result.SUCCESS) {
-            stable = true;
-            if (build.getBuildVariables().containsKey("gitlabSuccessMessage")) {
-                stringBuilder.append(build.getBuildVariables().get("gitlabSuccessMessage"));
-            } else {
-                stringBuilder.append(trigger.getDescriptor().getSuccessMessage());
-            }
-        } else if (result == Result.UNSTABLE) {
-            if (build.getBuildVariables().containsKey("gitlabUnstableMessage")) {
-                stringBuilder.append(build.getBuildVariables().get("gitlabUnstableMessage"));
-            } else {
-                stringBuilder.append(trigger.getDescriptor().getUnstableMessage());
-            }
-        } else {
-            if (build.getBuildVariables().containsKey("gitlabFailureMessage")) {
-                stringBuilder.append(build.getBuildVariables().get("gitlabFailureMessage"));
-            } else {
-                stringBuilder.append(trigger.getDescriptor().getFailureMessage());
-            }
-        }
-
-        if (!isEnableBuildTriggeredMessage()) {
-            withCustomParameters(stringBuilder, cause.getCustomParameters());
-        }
-
-        String buildUrl = getRootUrl() + build.getUrl();
-        stringBuilder
-                .append("\nBuild results available at: ")
-                .append("[")
-                .append(buildUrl)
-                .append("](")
-                .append(buildUrl)
-                .append(")"); // Link in markdown format
-
-        boolean shouldClose = false;
-        if (!stable && trigger.getAutoCloseFailed()) {
-            shouldClose = true;
-        }
-
-        boolean shouldMerge = false;
-        if (stable && trigger.getAutoMergePassed()) {
-            shouldMerge = true;
-        }
-
-        if (isPublishBuildProgressMessages() || !stable) {
-            repository.createNote(cause.getMergeRequestId(), stringBuilder.toString(), shouldClose, shouldMerge);
-        }
-
-        String status = (result == Result.SUCCESS) ? "success" : "failed";
-        repository.changeCommitStatus(cause.getMergeRequestId(), cause.getLastCommitId(), status, buildUrl);
-    }
-
-    private String getOnStartedMessage(GitlabCause cause) {
-        return cause.getShortDescription();
     }
 }
