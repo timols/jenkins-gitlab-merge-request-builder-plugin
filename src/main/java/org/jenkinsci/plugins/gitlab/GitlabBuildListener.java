@@ -26,6 +26,9 @@ public class GitlabBuildListener extends RunListener<Run<?, ?>> {
     @Override
     public void onStarted(Run<?, ?> build, TaskListener listener) {
         GitlabCause gitlabCause = build.getCause(GitlabCause.class);
+        if (gitlabCause == null) {
+            return;
+        }
         Gitlab gitlab = GitlabBuildTrigger.DESCRIPTOR.getGitlab();
         try {
             build.setDescription("<a href=\"" + gitlabCause.getWebUrl() + "\">" + gitlabCause.getShortDescription() + "</a>");
@@ -47,6 +50,9 @@ public class GitlabBuildListener extends RunListener<Run<?, ?>> {
     @Override
     public void onCompleted(Run<?, ?> build, TaskListener listener) {
         GitlabCause gitlabCause = build.getCause(GitlabCause.class);
+        if (gitlabCause == null) {
+            return;
+        }
         Gitlab gitlab = GitlabBuildTrigger.DESCRIPTOR.getGitlab();
         try {
             boolean stable = false;

@@ -6,7 +6,7 @@
     </f:entry>
     <f:entry title="Source Branch Regex" field="sourceBranchRegex"
                 description="Trigger build only if the source branch of the merge request matches this regex.">
-        <f:textbox default="(sandbox|stage|master|cherry-pick)-[\w\d-]+" />
+        <f:textbox default="(sandbox|stage|master|cherry-pick|revert)-[\w\d-]+" />
     </f:entry>
     <f:entry title="Target Branch Regex" field="targetBranchRegex"
             description="Trigger build only if the target branch of the merge request matches this regex.">

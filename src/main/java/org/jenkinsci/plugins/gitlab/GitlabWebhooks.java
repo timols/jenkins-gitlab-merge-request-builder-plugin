@@ -94,7 +94,7 @@ public class GitlabWebhooks implements UnprotectedRootAction {
                 if (StringUtils.isEmpty(author.getEmail())) {
                     String tailUrl = GitlabUser.URL + "/" + author.getId();
                     String json = api.retrieve().to(tailUrl, String.class);
-                    LOGGER.info(String.format("Author is %s", json));
+//                    LOGGER.info(String.format("Author is %s", json));
                     author = api.getUser(gitlabMergeRequest.getAuthor().getId());
                     gitlabMergeRequest.getAuthor().setEmail(author.getEmail());
                 }
@@ -123,7 +123,7 @@ public class GitlabWebhooks implements UnprotectedRootAction {
         } catch (JsonSyntaxException e) {
             LOGGER.warning(e.toString());
         } catch (Exception e) {
-            LOGGER.severe(String.format("%s on run doStart", e));
+            LOGGER.throwing("GitlabWebhooks", "doStart", e);
         }
         return response;
     }

@@ -55,16 +55,16 @@ public class GitlabBuilds {
             shouldRun = false;
         }
 
-        LOGGER.log(Level.INFO, "The merge request state: " + mergeRequest.getState());
+        LOGGER.log(Level.INFO, "The merge request state: " + mergeRequest.getState() + ", " + cause.getMergeRequestState());
         // state is close
-        if (mergeRequest.isClosed() || mergeRequest.isMerged()) {
-            LOGGER.log(Level.INFO, "The merge request " + cause.getTitle() + " has been closed or merged.");
+        if (mergeRequest.isClosed()) {
+            LOGGER.log(Level.INFO, "The merge request " + cause.getTitle() + " has been closed.");
             shouldRun = false;
         }
 
         if (hasCommitStatus(project, cause.getLastCommitId(), api)) {
-            LOGGER.log(Level.INFO, "The merge request " + cause.getTitle() + "  has running/pending pipelines.");
-            shouldRun = false;
+            LOGGER.log(Level.WARNING, "The merge request " + cause.getTitle() + "  has running/pending pipelines.");
+//            shouldRun = false;
         }
 
         if (lastNote != null && lastNote.getBody().equals(triggerComment)) {

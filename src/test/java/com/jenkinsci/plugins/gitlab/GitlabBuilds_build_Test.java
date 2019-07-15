@@ -52,6 +52,7 @@ public class GitlabBuilds_build_Test {
     GitlabCause cause = new GitlabCause(
             1,
             2,
+            "opened",
             "author",
             "authorEmail",
             "sourceName",

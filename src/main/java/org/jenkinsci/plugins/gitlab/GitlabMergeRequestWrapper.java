@@ -255,6 +255,7 @@ public class GitlabMergeRequestWrapper {
         GitlabCause cause = new GitlabCause(
         		this.getId(),
         		this.getIid(),
+        		mergeRequest.getState(),
         		mergeRequest.getAuthor().getUsername(),
         		mergeRequest.getAuthor().getEmail(),
         		this.getSourceName(),

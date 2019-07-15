@@ -87,6 +87,7 @@ public final class GitlabBuildTrigger extends Trigger<Job<?, ?>> {
 
         values.put("gitlabMergeRequestId", new StringParameterValue("gitlabMergeRequestId", String.valueOf(cause.getMergeRequestId())));
         values.put("gitlabMergeRequestIid", new StringParameterValue("gitlabMergeRequestIid", String.valueOf(cause.getMergeRequestIid())));
+        values.put("gitlabMergeRequestState", new StringParameterValue("gitlabMergeRequestState", String.valueOf(cause.getMergeRequestState())));
         values.put("gitlabMergeRequestAuthor", new StringParameterValue("gitlabMergeRequestAuthor", cause.getAuthor()));
         values.put("gitlabMergeRequestAuthorEmail", new StringParameterValue("gitlabMergeRequestAuthorEmail", cause.getAuthorEmail()));
         values.put("gitlabSourceName", new StringParameterValue("gitlabSourceName", cause.getSourceName()));

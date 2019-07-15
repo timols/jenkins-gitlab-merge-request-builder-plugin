@@ -7,6 +7,7 @@ import java.util.Map;
 public class GitlabCause extends Cause {
     private final Integer mergeRequestId;
     private final Integer mergeRequestIid;
+    private final String mergeRequestState;
     private final String author;
     private final String authorEmail;
     private final String sourceName;
@@ -25,6 +26,7 @@ public class GitlabCause extends Cause {
 
     public GitlabCause(Integer mergeRequestId,
                        Integer mergeRequestIid,
+                       String mergeRequestState,
                        String author,
                        String authorEmail,
                        String sourceName,
@@ -41,6 +43,7 @@ public class GitlabCause extends Cause {
     	
         this.mergeRequestId = mergeRequestId;
         this.mergeRequestIid = mergeRequestIid;
+        this.mergeRequestState = mergeRequestState;
         this.author = author;
         this.authorEmail = authorEmail;
         this.sourceName = sourceName;
@@ -127,5 +130,9 @@ public class GitlabCause extends Cause {
 
     public void setTrigger(GitlabBuildTrigger trigger) {
         this.trigger = trigger;
+    }
+
+    public String getMergeRequestState() {
+        return mergeRequestState;
     }
 }
