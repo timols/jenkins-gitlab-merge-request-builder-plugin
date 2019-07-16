@@ -102,10 +102,10 @@ public class GitlabMergeRequestWrapper {
             GitlabAPI api = builder.getGitlab().get();
             GitlabCommit latestCommit = getLatestCommit(gitlabMergeRequest, api);
 
-            if (latestCommit == null) { // the source branch has been removed
+            if (latestCommit == null) { // the source branch has been removed and is not merged
                 return;
             }
-            
+
             Map<String, String> customParameters = getSpecifiedCustomParameters(gitlabMergeRequest, api);
             build(customParameters, latestCommit.getId(), gitlabMergeRequest);
         } catch (IOException e) {
@@ -156,7 +156,21 @@ public class GitlabMergeRequestWrapper {
 
         if (commits.isEmpty()) {
             LOGGER.log(Level.SEVERE, "Merge Request without commits.");
-            return null;
+            if (gitlabMergeRequest.isMerged()) {
+                // get target branch latest commit id
+                commits = api.getLastCommits(gitlabMergeRequest.getTargetProjectId(), gitlabMergeRequest.getTargetBranch());
+                Collections.sort(commits, new Comparator<GitlabCommit>() {
+                    public int compare(GitlabCommit o1, GitlabCommit o2) {
+                        return o2.getCreatedAt().compareTo(o1.getCreatedAt());
+                    }
+                });
+                if (commits.isEmpty()) {
+                    LOGGER.log(Level.SEVERE, "Merge Request's project branch has no commits.");
+                    return null;
+                }
+            } else {
+                return null;
+            }
         }
 
         return commits.get(0);
@@ -237,19 +251,19 @@ public class GitlabMergeRequestWrapper {
 
     }
 
-    public GitlabCommitStatus changeCommitStatus(String commitHash, String commitStatus, String targetUrl) {
-
-        try {
-            GitlabAPI api = builder.getGitlab().get();
-            GitlabMergeRequest mergeRequest = api.getMergeRequest(project, iid);
-
-            return builder.getGitlab().changeCommitStatus(project.getId(), mergeRequest.getSourceBranch(), commitHash, commitStatus, targetUrl);
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Failed to change status for merge request commit " + commitHash, e);
-        }
-
-        return null;
-    }
+//    public GitlabCommitStatus changeCommitStatus(String commitHash, String commitStatus, String targetUrl) {
+//
+//        try {
+//            GitlabAPI api = builder.getGitlab().get();
+//            GitlabMergeRequest mergeRequest = api.getMergeRequest(project, iid);
+//
+//            return builder.getGitlab().changeCommitStatus(project.getId(), mergeRequest.getSourceBranch(), commitHash, commitStatus, targetUrl);
+//        } catch (IOException e) {
+//            LOGGER.log(Level.SEVERE, "Failed to change status for merge request commit " + commitHash, e);
+//        }
+//
+//        return null;
+//    }
 
     private void build(Map<String, String> customParameters, String commitHash, GitlabMergeRequest mergeRequest) {
         GitlabCause cause = new GitlabCause(

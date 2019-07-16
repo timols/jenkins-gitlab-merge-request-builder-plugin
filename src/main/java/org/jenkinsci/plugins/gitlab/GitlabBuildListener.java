@@ -26,7 +26,7 @@ public class GitlabBuildListener extends RunListener<Run<?, ?>> {
     @Override
     public void onStarted(Run<?, ?> build, TaskListener listener) {
         GitlabCause gitlabCause = build.getCause(GitlabCause.class);
-        if (gitlabCause == null) {
+        if (gitlabCause == null || gitlabCause.getMergeRequestState().equals(GitlabMergeRequest.STATUS_MERGED)) {
             return;
         }
         Gitlab gitlab = GitlabBuildTrigger.DESCRIPTOR.getGitlab();
@@ -50,7 +50,7 @@ public class GitlabBuildListener extends RunListener<Run<?, ?>> {
     @Override
     public void onCompleted(Run<?, ?> build, TaskListener listener) {
         GitlabCause gitlabCause = build.getCause(GitlabCause.class);
-        if (gitlabCause == null) {
+        if (gitlabCause == null || gitlabCause.getMergeRequestState().equals(GitlabMergeRequest.STATUS_MERGED)) {
             return;
         }
         Gitlab gitlab = GitlabBuildTrigger.DESCRIPTOR.getGitlab();
