@@ -8,7 +8,7 @@ public class GitlabCause extends Cause {
     private final Integer mergeRequestId;
     private final Integer mergeRequestIid;
     private final String mergeRequestState;
-    private final String author;
+    private final String assigneeEmail;
     private final String authorEmail;
     private final String sourceName;
     private final String sourceRepository;
@@ -27,8 +27,8 @@ public class GitlabCause extends Cause {
     public GitlabCause(Integer mergeRequestId,
                        Integer mergeRequestIid,
                        String mergeRequestState,
-                       String author,
                        String authorEmail,
+                       String assigneeEmail,
                        String sourceName,
                        String sourceRepository,
                        String sourceBranch,
@@ -44,7 +44,7 @@ public class GitlabCause extends Cause {
         this.mergeRequestId = mergeRequestId;
         this.mergeRequestIid = mergeRequestIid;
         this.mergeRequestState = mergeRequestState;
-        this.author = author;
+        this.assigneeEmail = assigneeEmail;
         this.authorEmail = authorEmail;
         this.sourceName = sourceName;
         this.sourceRepository = sourceRepository;
@@ -60,7 +60,7 @@ public class GitlabCause extends Cause {
     }
     @Override
     public String getShortDescription() {
-        return "Gitlab Merge Request #" + mergeRequestIid + "(" + this.getAuthor() + ")" + " : " + sourceName + "/" + sourceBranch +
+        return "Gitlab Merge Request #" + mergeRequestIid + "(" + this.getAuthorEmail() + ")" + " : " + sourceName + "/" + sourceBranch +
                 " => " + targetBranch;
     }
 
@@ -112,8 +112,8 @@ public class GitlabCause extends Cause {
         return lastCommitId;
     }
 
-    public String getAuthor() {
-        return author;
+    public String getAssigneeEmail() {
+        return assigneeEmail;
     }
 
     public String getAuthorEmail() {

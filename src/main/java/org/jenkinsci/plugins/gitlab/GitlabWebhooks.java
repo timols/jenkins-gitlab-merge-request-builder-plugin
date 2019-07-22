@@ -90,15 +90,18 @@ public class GitlabWebhooks implements UnprotectedRootAction {
                 GitlabMergeRequest gitlabMergeRequest = api.getMergeRequest(project, mergeRequest.getIid());
                 // make sure author email exists
                 GitlabUser author = gitlabMergeRequest.getAuthor();
-                LOGGER.info(String.format("MergeRequest author is %s:%s:%s", author.getId(), author.getName(), author.getEmail()));
+                GitlabUser assignee = gitlabMergeRequest.getAssignee();
                 if (StringUtils.isEmpty(author.getEmail())) {
                     String tailUrl = GitlabUser.URL + "/" + author.getId();
-                    String json = api.retrieve().to(tailUrl, String.class);
-//                    LOGGER.info(String.format("Author is %s", json));
-                    author = api.getUser(gitlabMergeRequest.getAuthor().getId());
+                    author = api.getUser(author.getId());
                     gitlabMergeRequest.getAuthor().setEmail(author.getEmail());
                 }
-                LOGGER.info(String.format("MergeRequest author is %s:%s:%s", author.getId(), author.getName(), author.getEmail()));
+                if (StringUtils.isEmpty(assignee.getEmail())) {
+                    String tailUrl = GitlabUser.URL + "/" + assignee.getId();
+                    assignee = api.getUser(assignee.getId());
+                    gitlabMergeRequest.getAssignee().setEmail(assignee.getEmail());
+                }
+                LOGGER.info(String.format("MergeRequest %s author is %s:%s, assignee %s:%s", author.getId(), author.getName(), author.getEmail(), assignee.getName(), assignee.getEmail()));
                 GitlabMergeRequestWrapper mergeRequestWrapper;
                 Map<Integer, GitlabMergeRequestWrapper> mergeRequestWrapperMap = currentBuilder.getMergeRequests();
 

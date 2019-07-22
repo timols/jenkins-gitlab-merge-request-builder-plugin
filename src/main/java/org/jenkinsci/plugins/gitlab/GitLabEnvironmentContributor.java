@@ -23,8 +23,8 @@ public class GitLabEnvironmentContributor extends EnvironmentContributor {
             variables.put("gitlabMergeRequestId", cause.getMergeRequestId() + "");
             variables.put("gitlabMergeRequestIid", cause.getMergeRequestIid() + "");
             variables.put("gitlabMergeRequestState", cause.getMergeRequestState() + "");
-            variables.put("gitlabMergeRequestAuthor", cause.getAuthor());
             variables.put("gitlabMergeRequestAuthorEmail", cause.getAuthorEmail());
+            variables.put("gitlabMergeRequestAssigneeEmail", cause.getAssigneeEmail());
             variables.put("gitlabSourceName", cause.getSourceName());
             variables.put("gitlabSourceRepository", cause.getSourceRepository());
             variables.put("gitlabSourceBranch", cause.getSourceBranch());
