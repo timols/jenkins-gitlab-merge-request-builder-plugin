@@ -105,33 +105,33 @@ public class GitlabRepository {
         return null;
     }
 
-    public String getProjectUrl() {
-        try {
-            return builder.getGitlab().get().getUrl(project.getPathWithNamespace()).toString();
-        } catch (IOException e) {
-            return null;
-        }
-    }
+//    public String getProjectUrl() {
+//        try {
+//            return builder.getGitlab().get().getUrl(project.getPathWithNamespace()).toString();
+//        } catch (IOException e) {
+//            return null;
+//        }
+//    }
 
-    public String getMergeRequestUrl(Integer mergeRequestIid) {
-        return getProjectUrl() + GitlabMergeRequest.URL + "/" + mergeRequestIid;
-    }
+//    public String getMergeRequestUrl(Integer mergeRequestIid) {
+//        return getProjectUrl() + GitlabMergeRequest.URL + "/" + mergeRequestIid;
+//    }
+//
+//    public GitlabNote createNote(Integer mergeRequestId, String message, boolean shouldClose, boolean shouldMerge) {
+//        GitlabMergeRequestWrapper wrapper = mergeRequests.get(mergeRequestId);
+//        return GitlabMergeRequestWrapper.createNote(wrapper.getId(), wrapper.getIid(), wrapper.getProject().getId(), message, shouldClose, shouldMerge);
+//    }
 
-    public GitlabNote createNote(Integer mergeRequestId, String message, boolean shouldClose, boolean shouldMerge) {
-        GitlabMergeRequestWrapper gitlabMergeRequestWrapper = mergeRequests.get(mergeRequestId);
-        return gitlabMergeRequestWrapper.createNote(message, shouldClose, shouldMerge);
-    }
-
-    public GitlabCommitStatus changeCommitStatus(Integer mergeRequestId, String commitHash, String commitStatus, String targetUrl) {
-        if (commitHash != null) {
-
-            GitlabMergeRequestWrapper gitlabMergeRequestWrapper = mergeRequests.get(mergeRequestId);
-
-            LOGGER.info("Sending Status: " + commitStatus);
-
-            return gitlabMergeRequestWrapper.changeCommitStatus(commitHash, commitStatus, targetUrl);
-        } else {
-            return null;
-        }
-    }
+//    public GitlabCommitStatus changeCommitStatus(Integer mergeRequestId, String commitHash, String commitStatus, String targetUrl) {
+//        if (commitHash != null) {
+//
+//            GitlabMergeRequestWrapper gitlabMergeRequestWrapper = mergeRequests.get(mergeRequestId);
+//
+//            LOGGER.info("Sending Status: " + commitStatus);
+//
+//            return gitlabMergeRequestWrapper.changeCommitStatus(commitHash, commitStatus, targetUrl);
+//        } else {
+//            return null;
+//        }
+//    }
 }

@@ -36,8 +36,10 @@ public class GitlabBuilds_build_Test {
     GitlabProject project;
     @Injectable
     GitlabUser user;
-    @Injectable
-    GitlabMergeRequest mergeRequest;
+
+    //@Injectable
+
+    GitlabMergeRequest mergeRequest = new GitlabMergeRequest();
 
     @Injectable
     GitlabBuildTrigger trigger;
@@ -47,10 +49,12 @@ public class GitlabBuilds_build_Test {
     @Tested
     GitlabBuilds subject;
 
-
     GitlabCause cause = new GitlabCause(
             1,
             2,
+            "opened",
+            "authorEmail",
+            "assigneeEmail",
             "sourceName",
             "sourceRepo",
             "sourceBranch",
@@ -60,10 +64,12 @@ public class GitlabBuilds_build_Test {
             "description",
             3,
             4,
-            "commitHash"
+            "commitHash",
+            "http://web_url"
     );
 
-    List<GitlabCommitStatus> statuses = Arrays.asList(new GitlabCommitStatus());
+    GitlabCommitStatus status = new GitlabCommitStatus();
+    List<GitlabCommitStatus> statuses = Arrays.asList(status);
 
     @BeforeClass
     public static void beforeClass() {
@@ -83,6 +89,8 @@ public class GitlabBuilds_build_Test {
 
     @Before
     public void before() throws Exception {
+
+        status.setStatus("running");
 
         user.setUsername("username");
         mergeRequest.setAssignee(user);
@@ -107,7 +115,55 @@ public class GitlabBuilds_build_Test {
     }
 
     @Test
-    public void doesNotBuild_branchPattern() throws IOException {
+    public void doesNotBuild_MergeRequestClosed() throws IOException {
+
+        String stateStr = mergeRequest.getState();
+        mergeRequest.setState("closed");
+
+        subject.build(cause, new HashMap<String, String>(), project, mergeRequest);
+
+        new Verifications() {{
+            trigger.startJob((GitlabCause) any);
+            times = 0;
+        }};
+
+        mergeRequest.setState(stateStr);
+    }
+
+    @Test
+    public void doesNotBuild_MergeRequestMerged() throws IOException {
+
+        String stateStr = mergeRequest.getState();
+        mergeRequest.setState("merged");
+
+        subject.build(cause, new HashMap<String, String>(), project, mergeRequest);
+
+        new Verifications() {{
+            trigger.startJob((GitlabCause) any);
+            times = 0;
+        }};
+
+        mergeRequest.setState(stateStr);
+    }
+
+    @Test
+    public void doesNotBuild_SourceBranchPattern() throws IOException {
+
+        new NonStrictExpectations() {{
+            trigger.getSourceBranchRegex();
+            result = "thisisafakepattern";
+        }};
+
+        subject.build(cause, new HashMap<String, String>(), project, mergeRequest);
+
+        new Verifications() {{
+            trigger.startJob((GitlabCause) any);
+            times = 0;
+        }};
+    }
+
+    @Test
+    public void doesNotBuild_TargetBranchPattern() throws IOException {
 
         new NonStrictExpectations() {{
             trigger.getTargetBranchRegex();
@@ -170,124 +226,124 @@ public class GitlabBuilds_build_Test {
         }};
     }
 
-    @Test
-    public void onStart_notMuted(@Mocked final AbstractBuild build) {
+//    @Test
+//    public void onStart_notMuted(@Mocked final AbstractBuild build) {
+//
+//        new NonStrictExpectations(subject) {{
+//            invoke(subject, "getCause", (AbstractBuild) build);
+//            result = cause;
+//
+//            invoke(subject, "getRootUrl");
+//            result = "http://git.example.com";
+//
+//            invoke(subject, "isPublishBuildProgressMessages");
+//            result = true;
+//        }};
+//
+//        subject.onStarted(build);
+//
+//        new Verifications() {{
+//            repository.createNote(anyInt, anyString, anyBoolean, anyBoolean);
+//            times = 1;
+//        }};
+//    }
+//
+//    @Test
+//    public void onStart_muted(@Mocked final AbstractBuild build) {
+//
+//        new NonStrictExpectations(subject) {{
+//            invoke(subject, "getCause", (AbstractBuild) build);
+//            result = cause;
+//
+//            invoke(subject, "getRootUrl");
+//            result = "http://git.example.com";
+//
+//            invoke(subject, "isPublishBuildProgressMessages");
+//            result = false;
+//        }};
+//
+//        subject.onStarted(build);
+//
+//        new Verifications() {{
+//            repository.createNote(anyInt, anyString, anyBoolean, anyBoolean);
+//            times = 0;
+//        }};
+//    }
 
-        new NonStrictExpectations(subject) {{
-            invoke(subject, "getCause", (AbstractBuild) build);
-            result = cause;
+//    @Test
+//    public void onCompleted_notMuted(@Mocked final AbstractBuild build) {
+//
+//        new NonStrictExpectations(subject) {{
+//            invoke(subject, "getCause", (AbstractBuild) build);
+//            result = cause;
+//
+//            invoke(subject, "getResult", (AbstractBuild) build);
+//            result = Result.SUCCESS;
+//
+//            invoke(subject, "getRootUrl");
+//            result = "http://git.example.com";
+//
+//            invoke(subject, "isPublishBuildProgressMessages");
+//            result = true;
+//        }};
+//
+//        subject.onCompleted(build);
+//
+//        new Verifications() {{
+//            repository.createNote(anyInt, anyString, anyBoolean, anyBoolean);
+//            times = 1;
+//        }};
+//    }
+//
+//    @Test
+//    public void onCompleted_muted(@Mocked final AbstractBuild build) {
+//
+//        new NonStrictExpectations(subject) {{
+//            invoke(subject, "getCause", (AbstractBuild) build);
+//            result = cause;
+//
+//            invoke(subject, "getResult", (AbstractBuild) build);
+//            result = Result.SUCCESS;
+//
+//            invoke(subject, "getRootUrl");
+//            result = "http://git.example.com";
+//
+//            invoke(subject, "isPublishBuildProgressMessages");
+//            result = false;
+//        }};
+//
+//        subject.onCompleted(build);
+//
+//        new Verifications() {{
+//            repository.createNote(anyInt, anyString, anyBoolean, anyBoolean);
+//            times = 0;
+//        }};
+//    }
 
-            invoke(subject, "getRootUrl");
-            result = "http://git.example.com";
-
-            invoke(subject, "isPublishBuildProgressMessages");
-            result = true;
-        }};
-
-        subject.onStarted(build);
-
-        new Verifications() {{
-            repository.createNote(anyInt, anyString, anyBoolean, anyBoolean);
-            times = 1;
-        }};
-    }
-
-    @Test
-    public void onStart_muted(@Mocked final AbstractBuild build) {
-
-        new NonStrictExpectations(subject) {{
-            invoke(subject, "getCause", (AbstractBuild) build);
-            result = cause;
-
-            invoke(subject, "getRootUrl");
-            result = "http://git.example.com";
-
-            invoke(subject, "isPublishBuildProgressMessages");
-            result = false;
-        }};
-
-        subject.onStarted(build);
-
-        new Verifications() {{
-            repository.createNote(anyInt, anyString, anyBoolean, anyBoolean);
-            times = 0;
-        }};
-    }
-
-    @Test
-    public void onCompleted_notMuted(@Mocked final AbstractBuild build) {
-
-        new NonStrictExpectations(subject) {{
-            invoke(subject, "getCause", (AbstractBuild) build);
-            result = cause;
-
-            invoke(subject, "getResult", (AbstractBuild) build);
-            result = Result.SUCCESS;
-
-            invoke(subject, "getRootUrl");
-            result = "http://git.example.com";
-
-            invoke(subject, "isPublishBuildProgressMessages");
-            result = true;
-        }};
-
-        subject.onCompleted(build);
-
-        new Verifications() {{
-            repository.createNote(anyInt, anyString, anyBoolean, anyBoolean);
-            times = 1;
-        }};
-    }
-
-    @Test
-    public void onCompleted_muted(@Mocked final AbstractBuild build) {
-
-        new NonStrictExpectations(subject) {{
-            invoke(subject, "getCause", (AbstractBuild) build);
-            result = cause;
-
-            invoke(subject, "getResult", (AbstractBuild) build);
-            result = Result.SUCCESS;
-
-            invoke(subject, "getRootUrl");
-            result = "http://git.example.com";
-
-            invoke(subject, "isPublishBuildProgressMessages");
-            result = false;
-        }};
-
-        subject.onCompleted(build);
-
-        new Verifications() {{
-            repository.createNote(anyInt, anyString, anyBoolean, anyBoolean);
-            times = 0;
-        }};
-    }
-
-    @Test
-    public void onCompleted_mutedButBuildFailed(@Mocked final AbstractBuild build) {
-
-        new NonStrictExpectations(subject) {{
-            invoke(subject, "getCause", (AbstractBuild) build);
-            result = cause;
-
-            invoke(subject, "getResult", (AbstractBuild) build);
-            result = Result.FAILURE;
-
-            invoke(subject, "getRootUrl");
-            result = "http://git.example.com";
-
-            invoke(subject, "isPublishBuildProgressMessages");
-            result = false;
-        }};
-
-        subject.onCompleted(build);
-
-        new Verifications() {{
-            repository.createNote(anyInt, anyString, anyBoolean, anyBoolean);
-            times = 1;
-        }};
-    }
+//    @Test
+//    public void onCompleted_mutedButBuildFailed(@Mocked final AbstractBuild build) {
+//
+//        new NonStrictExpectations(subject) {{
+//            invoke(subject, "getCause", (AbstractBuild) build);
+//            result = cause;
+//
+//            invoke(subject, "getResult", (AbstractBuild) build);
+//            result = Result.FAILURE;
+//
+//            invoke(subject, "getRootUrl");
+//            result = "http://git.example.com";
+//
+//            invoke(subject, "isPublishBuildProgressMessages");
+//            result = false;
+//        }};
+//
+//        subject.onCompleted(build);
+//
+//        new Verifications() {{
+//            repository.createNote(anyInt, anyString, anyBoolean, anyBoolean);
+//            times = 1;
+//        }};
+//    }
 
     @Test
     public void WorkInProgressRespect()

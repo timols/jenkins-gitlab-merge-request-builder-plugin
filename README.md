@@ -100,6 +100,8 @@ The plugin will contribute some environment variables to the build.
 * **gitlabSourceProjectId**
 * **gitlabTargetProjectId**
 * **gitlabLastCommitId**
+* **gitlabMergeRequestAuthorEmail**
+* **gitlabMergeRequestAssigneeEmail**
 
 ## Contributing
 

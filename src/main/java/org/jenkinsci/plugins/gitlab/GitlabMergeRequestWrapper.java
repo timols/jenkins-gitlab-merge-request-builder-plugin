@@ -102,10 +102,10 @@ public class GitlabMergeRequestWrapper {
             GitlabAPI api = builder.getGitlab().get();
             GitlabCommit latestCommit = getLatestCommit(gitlabMergeRequest, api);
 
-            if (latestCommit == null) { // the source branch has been removed
+            if (latestCommit == null) { // the source branch has been removed and is not merged
                 return;
             }
-            
+
             Map<String, String> customParameters = getSpecifiedCustomParameters(gitlabMergeRequest, api);
             build(customParameters, latestCommit.getId(), gitlabMergeRequest);
         } catch (IOException e) {
@@ -156,7 +156,21 @@ public class GitlabMergeRequestWrapper {
 
         if (commits.isEmpty()) {
             LOGGER.log(Level.SEVERE, "Merge Request without commits.");
-            return null;
+            if (gitlabMergeRequest.isMerged()) {
+                // get target branch latest commit id
+                commits = api.getLastCommits(gitlabMergeRequest.getTargetProjectId(), gitlabMergeRequest.getTargetBranch());
+                Collections.sort(commits, new Comparator<GitlabCommit>() {
+                    public int compare(GitlabCommit o1, GitlabCommit o2) {
+                        return o2.getCreatedAt().compareTo(o1.getCreatedAt());
+                    }
+                });
+                if (commits.isEmpty()) {
+                    LOGGER.log(Level.SEVERE, "Merge Request's project branch has no commits.");
+                    return null;
+                }
+            } else {
+                return null;
+            }
         }
 
         return commits.get(0);
@@ -206,29 +220,30 @@ public class GitlabMergeRequestWrapper {
         return targetBranch;
     }
     
-	public GitlabNote createNote(String message, boolean shouldClose, boolean shouldMerge) {
+	public static GitlabNote createNote(Integer id, Integer iid, Integer pid, String message, boolean shouldClose, boolean shouldMerge) {
         GitlabMergeRequest mergeRequest = new GitlabMergeRequest();
         mergeRequest.setId(id);
         mergeRequest.setIid(iid);
-        mergeRequest.setProjectId(project.getId());
+        mergeRequest.setProjectId(pid);
 
+        Gitlab gitlab = GitlabBuildTrigger.DESCRIPTOR.getGitlab();
         try {
             if (shouldClose || shouldMerge) {
                 String tailUrl = "";
                 if (shouldClose) {
-                    tailUrl = GitlabProject.URL + "/" + project.getId() + "/merge_request/" + iid + "?state_event=close";
+                    tailUrl = GitlabProject.URL + "/" + pid + "/merge_requests/" + iid + "?state_event=close";
                 }
                 if (shouldMerge) {
-                    tailUrl = GitlabProject.URL + "/" + project.getId() + "/merge_request/" + iid + "/merge";
+                    tailUrl = GitlabProject.URL + "/" + pid + "/merge_requests/" + iid + "/merge";
                 }
-                builder.getGitlab().get().retrieve().method("PUT").to(tailUrl, Void.class);
+                gitlab.get().retrieve().method("PUT").to(tailUrl, Void.class);
             }
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Failed to automatically merge/close the merge request " + iid, e);
         }
 
         try {
-            return builder.getGitlab().get().createNote(mergeRequest, message);
+            return gitlab.get().createNote(mergeRequest, message);
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Failed to create note for merge request " + iid, e);
             return null;
@@ -236,24 +251,27 @@ public class GitlabMergeRequestWrapper {
 
     }
 
-    public GitlabCommitStatus changeCommitStatus(String commitHash, String commitStatus, String targetUrl) {
-
-        try {
-            GitlabAPI api = builder.getGitlab().get();
-            GitlabMergeRequest mergeRequest = api.getMergeRequest(project, iid);
-
-            return builder.getGitlab().changeCommitStatus(project.getId(), mergeRequest.getSourceBranch(), commitHash, commitStatus, targetUrl);
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Failed to change status for merge request commit " + commitHash, e);
-        }
-
-        return null;
-    }
+//    public GitlabCommitStatus changeCommitStatus(String commitHash, String commitStatus, String targetUrl) {
+//
+//        try {
+//            GitlabAPI api = builder.getGitlab().get();
+//            GitlabMergeRequest mergeRequest = api.getMergeRequest(project, iid);
+//
+//            return builder.getGitlab().changeCommitStatus(project.getId(), mergeRequest.getSourceBranch(), commitHash, commitStatus, targetUrl);
+//        } catch (IOException e) {
+//            LOGGER.log(Level.SEVERE, "Failed to change status for merge request commit " + commitHash, e);
+//        }
+//
+//        return null;
+//    }
 
     private void build(Map<String, String> customParameters, String commitHash, GitlabMergeRequest mergeRequest) {
         GitlabCause cause = new GitlabCause(
         		this.getId(),
         		this.getIid(),
+        		mergeRequest.getState(),
+        		mergeRequest.getAuthor().getEmail(),
+        		mergeRequest.getAssignee().getEmail(),
         		this.getSourceName(),
         		this.getSourceRepository(),
         		this.getSourceBranch(),
@@ -263,19 +281,24 @@ public class GitlabMergeRequestWrapper {
                 this.getDescription(),
                 this.sourceProject.getId(),
                 project.getId(),
-                commitHash);
+                commitHash,
+                mergeRequest.getWebUrl());
         
 		try {
+		    cause.setTrigger(builder.getTrigger());
+
 			String message = builder.getBuilds().build(cause, customParameters, project, mergeRequest);
 			
 			if (builder.isEnableBuildTriggeredMessage() && StringUtils.isNotBlank(message)) {
-	            createNote(message, false, false);
+                GitlabMergeRequestWrapper.createNote(this.id, this.iid, this.project.getId(), message, false, false);
 	            LOGGER.log(Level.INFO, message);
 	        }
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
     }
 
+    public GitlabProject getProject() {
+        return project;
+    }
 }
